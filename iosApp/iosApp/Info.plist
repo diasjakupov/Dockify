@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Dockify needs access to your health data to provide personalized health insights and recommendations.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Dockify needs permission to save health data to provide accurate tracking of your health metrics.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Dockify needs your location to find nearby users and help you connect with others in your area.</string>
+</dict>
+</plist>
