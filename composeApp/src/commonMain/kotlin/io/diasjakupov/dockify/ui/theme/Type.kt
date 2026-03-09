@@ -130,24 +130,24 @@ object HealthTextStyles {
     val metricValue = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
-        fontSize = 48.sp,
-        lineHeight = 56.sp,
+        fontSize = 52.sp,
+        lineHeight = 60.sp,
         letterSpacing = (-1).sp
     )
 
     val metricValueSmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
-        fontSize = 32.sp,
-        lineHeight = 40.sp,
+        fontSize = 28.sp,
+        lineHeight = 36.sp,
         letterSpacing = (-0.5).sp
     )
 
     val metricUnit = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
         letterSpacing = 0.25.sp
     )
 
@@ -157,5 +157,22 @@ object HealthTextStyles {
         fontSize = 10.sp,
         lineHeight = 14.sp,
         letterSpacing = 0.4.sp
+    )
+}
+
+/**
+ * Shared text styles for the redesigned Notion-style UI.
+ */
+object DockifyTextStyles {
+    /**
+     * Notion-style section header: ALL CAPS, letter-spaced, muted.
+     * Usage: Text("VITALS", style = DockifyTextStyles.sectionHeader)
+     */
+    val sectionHeader = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 1.2.sp
     )
 }
