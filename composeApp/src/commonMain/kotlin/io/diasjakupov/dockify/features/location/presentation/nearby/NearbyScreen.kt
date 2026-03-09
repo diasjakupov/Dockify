@@ -1,9 +1,13 @@
 package io.diasjakupov.dockify.features.location.presentation.nearby
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,19 +16,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.LocationOff
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -37,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.diasjakupov.dockify.features.location.domain.model.NearbyUser
@@ -52,6 +56,7 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 @Composable
 fun NearbyScreen(
+    onNavigateToProfile: () -> Unit = {},
     viewModel: NearbyViewModel = koinViewModel(),
     permissionHandler: LocationPermissionHandler = koinInject()
 ) {
@@ -80,7 +85,8 @@ fun NearbyScreen(
             NearbyTopBar(
                 isRefreshing = state.isManualRefreshing,
                 canRefresh = state.canRefresh,
-                onRefresh = { viewModel.onAction(NearbyAction.RefreshNearbyUsers) }
+                onRefresh = { viewModel.onAction(NearbyAction.RefreshNearbyUsers) },
+                onProfileClick = onNavigateToProfile
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -129,35 +135,46 @@ fun NearbyScreen(
 private fun NearbyTopBar(
     isRefreshing: Boolean,
     canRefresh: Boolean,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = "Nearby",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.align(Alignment.CenterStart)
+            style = MaterialTheme.typography.titleLarge,
+            color = io.diasjakupov.dockify.ui.theme.NotionColors.TextPrimary,
+            modifier = Modifier.weight(1f)
         )
-
-        IconButton(
-            onClick = onRefresh,
-            enabled = canRefresh,
-            modifier = Modifier.align(Alignment.CenterEnd)
-        ) {
+        IconButton(onClick = onRefresh, enabled = canRefresh) {
             if (isRefreshing) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp
-                )
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             } else {
                 Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Refresh"
+                    Icons.Default.Refresh,
+                    contentDescription = "Refresh",
+                    tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
                 )
             }
+        }
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(io.diasjakupov.dockify.ui.theme.NotionColors.SurfaceSecondary)
+                .clickable { onProfileClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Profile",
+                modifier = Modifier.size(20.dp),
+                tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
+            )
         }
     }
 }
@@ -351,41 +368,42 @@ private fun NearbyUsersContent(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Location info card
-        currentLocation?.let { location ->
+        // Location status row
+        currentLocation?.let {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, io.diasjakupov.dockify.ui.theme.NotionColors.Divider, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ListItem(
-                        headlineContent = {
-                            Text("Your Location")
-                        },
-                        supportingContent = {
-                            Text("Lat: ${formatCoordinate(location.latitude)}, Lng: ${formatCoordinate(location.longitude)}")
-                        },
-                        leadingContent = {
-                            Icon(
-                                imageVector = Icons.Default.LocationOn,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(io.diasjakupov.dockify.ui.theme.NotionColors.StatusSuccess)
+                    )
+                    Text(
+                        text = "Your location is active",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
                     )
                 }
             }
+        }
 
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "${nearbyUsers.size} users nearby",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
+        // Section header
+        item {
+            Text(
+                text = "${nearbyUsers.size} PEOPLE NEARBY",
+                style = io.diasjakupov.dockify.ui.theme.DockifyTextStyles.sectionHeader,
+                color = io.diasjakupov.dockify.ui.theme.NotionColors.TextTertiary,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
 
         // Nearby users list
@@ -397,23 +415,47 @@ private fun NearbyUsersContent(
 
 @Composable
 private fun NearbyUserCard(user: NearbyUser) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, io.diasjakupov.dockify.ui.theme.NotionColors.Divider, RoundedCornerShape(12.dp))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        ListItem(
-            headlineContent = {
-                Text("User ${user.userId}")
-            },
-            supportingContent = {
-                Text("Lat: ${formatCoordinate(user.location.latitude)}, Lng: ${formatCoordinate(user.location.longitude)}")
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(io.diasjakupov.dockify.ui.theme.NotionColors.SurfaceSecondary),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "User ${user.userId.take(8)}",
+                style = MaterialTheme.typography.titleSmall,
+                color = io.diasjakupov.dockify.ui.theme.NotionColors.TextPrimary
+            )
+            Text(
+                text = "Nearby",
+                style = MaterialTheme.typography.bodySmall,
+                color = io.diasjakupov.dockify.ui.theme.NotionColors.TextTertiary
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextTertiary
         )
     }
 }
