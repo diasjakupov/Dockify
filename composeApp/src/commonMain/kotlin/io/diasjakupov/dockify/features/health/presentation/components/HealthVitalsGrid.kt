@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import io.diasjakupov.dockify.features.health.domain.model.HealthMetric
 import io.diasjakupov.dockify.features.health.domain.model.HealthMetricType
 import io.diasjakupov.dockify.ui.theme.DockifyTheme
 import io.diasjakupov.dockify.ui.theme.HealthStatusColors
+import io.diasjakupov.dockify.ui.theme.NotionColors
 
 /**
  * Health status level for vital signs.
@@ -122,7 +124,9 @@ private fun VitalCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, NotionColors.Divider),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(
             modifier = Modifier
@@ -295,7 +299,7 @@ fun LargeVitalCard(
     }
 }
 
-private fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
+internal fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
     return mapNotNull { metric ->
         when (metric.type) {
             HealthMetricType.HEART_RATE -> VitalSign(

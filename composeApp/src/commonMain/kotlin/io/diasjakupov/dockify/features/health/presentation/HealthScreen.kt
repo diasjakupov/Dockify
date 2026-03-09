@@ -56,10 +56,12 @@ import io.diasjakupov.dockify.features.health.permission.HealthPermissionEffect
 import io.diasjakupov.dockify.features.health.permission.HealthPermissionHandler
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionEffect
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionHandler
-import io.diasjakupov.dockify.features.health.presentation.components.ActivityRingCard
 import io.diasjakupov.dockify.features.health.presentation.components.HealthVitalsSection
 import io.diasjakupov.dockify.features.health.presentation.components.RecommendationCard
-import io.diasjakupov.dockify.features.health.presentation.components.TodaySummaryCard
+import io.diasjakupov.dockify.features.health.presentation.components.StatusOverviewCard
+import io.diasjakupov.dockify.features.health.presentation.components.toVitalSigns
+import io.diasjakupov.dockify.ui.theme.DockifyTextStyles
+import io.diasjakupov.dockify.ui.theme.NotionColors
 import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
 import io.diasjakupov.dockify.ui.components.common.TopBarConfig
 import org.koin.compose.koinInject
@@ -342,16 +344,24 @@ private fun HealthScreenContent(
                     }
                 }
 
-                // Today's Summary Card (Greeting + Streak + Goals)
-                item(key = "summary") {
-                    TodaySummaryCard(summary = state.todaySummary)
+                // Status Overview Card
+                if (state.vitalMetrics.isNotEmpty()) {
+                    item(key = "status_overview") {
+                        StatusOverviewCard(
+                            vitals = state.vitalMetrics.toVitalSigns(),
+                            modifier = Modifier.padding(horizontal = 0.dp)
+                        )
+                    }
                 }
 
-                // Activity Rings Card
-                if (state.hasMetrics || !state.needsPermission) {
-                    item(key = "activity_rings") {
-                        ActivityRingCard(progress = state.activityProgress)
-                    }
+                // AI Recommendation Section Header
+                item(key = "recommendation_header") {
+                    Text(
+                        text = "AI INSIGHT",
+                        style = DockifyTextStyles.sectionHeader,
+                        color = NotionColors.TextTertiary,
+                        modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                    )
                 }
 
                 // AI Recommendation Card
@@ -361,6 +371,28 @@ private fun HealthScreenContent(
                         isLoading = state.isRecommendationLoading,
                         onRefresh = { onAction(HealthAction.RefreshRecommendation) }
                     )
+                }
+
+                // Activity Section Header
+                item(key = "activity_header") {
+                    Text(
+                        text = "ACTIVITY",
+                        style = DockifyTextStyles.sectionHeader,
+                        color = NotionColors.TextTertiary,
+                        modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                    )
+                }
+
+                // Vitals Section Header
+                if (state.vitalMetrics.isNotEmpty()) {
+                    item(key = "vitals_header") {
+                        Text(
+                            text = "VITALS",
+                            style = DockifyTextStyles.sectionHeader,
+                            color = NotionColors.TextTertiary,
+                            modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                        )
+                    }
                 }
 
                 // Health Vitals Section
