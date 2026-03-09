@@ -10,36 +10,36 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = Navy40,
+    primary = NotionColors.TextPrimary,
     onPrimary = Color.White,
-    primaryContainer = Navy90,
-    onPrimaryContainer = Navy10,
+    primaryContainer = NotionColors.SurfaceSecondary,
+    onPrimaryContainer = NotionColors.TextPrimary,
 
-    secondary = Mint40,
+    secondary = NotionColors.TextSecondary,
     onSecondary = Color.White,
-    secondaryContainer = Mint90,
-    onSecondaryContainer = Mint10,
+    secondaryContainer = NotionColors.SurfaceSecondary,
+    onSecondaryContainer = NotionColors.TextPrimary,
 
-    tertiary = SoftBlue40,
+    tertiary = NotionColors.Accent,
     onTertiary = Color.White,
-    tertiaryContainer = SoftBlue90,
-    onTertiaryContainer = SoftBlue10,
+    tertiaryContainer = NotionColors.AccentLight,
+    onTertiaryContainer = NotionColors.Accent,
 
-    error = ErrorRed40,
+    error = NotionColors.StatusError,
     onError = Color.White,
-    errorContainer = ErrorRed90,
-    onErrorContainer = ErrorRed10,
+    errorContainer = Color(0xFFFEE2E2),
+    onErrorContainer = Color(0xFF7F1D1D),
 
-    background = Neutral99,
-    onBackground = Neutral10,
-    surface = Neutral99,
-    onSurface = Neutral10,
-    surfaceVariant = NeutralVariant90,
-    onSurfaceVariant = NeutralVariant30,
+    background = NotionColors.BackgroundWarm,
+    onBackground = NotionColors.TextPrimary,
+    surface = NotionColors.SurfaceWhite,
+    onSurface = NotionColors.TextPrimary,
+    surfaceVariant = NotionColors.SurfaceSecondary,
+    onSurfaceVariant = NotionColors.TextSecondary,
 
-    outline = NeutralVariant50,
-    outlineVariant = NeutralVariant80,
-    scrim = Neutral10
+    outline = NotionColors.Divider,
+    outlineVariant = NotionColors.Divider,
+    scrim = NotionColors.TextPrimary
 )
 
 private val DarkColorScheme = darkColorScheme(
