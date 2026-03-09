@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material.icons.filled.Thermostat
@@ -37,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.diasjakupov.dockify.features.health.domain.model.HealthMetric
 import io.diasjakupov.dockify.features.health.domain.model.HealthMetricType
-import io.diasjakupov.dockify.ui.theme.DockifyTheme
 import io.diasjakupov.dockify.ui.theme.HealthStatusColors
 import io.diasjakupov.dockify.ui.theme.NotionColors
 
@@ -227,73 +225,6 @@ private fun StatusBadge(
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
                 color = statusColor
-            )
-        }
-    }
-}
-
-/**
- * Large vital card for primary metrics (e.g., heart rate).
- */
-@Composable
-fun LargeVitalCard(
-    vital: VitalSign,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = vital.accentColor.copy(alpha = 0.08f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = vital.label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = vital.accentColor.copy(alpha = 0.8f)
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = vital.value,
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Bold,
-                        color = vital.accentColor
-                    )
-                    Text(
-                        text = vital.unit,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = vital.accentColor.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                StatusBadge(
-                    status = vital.status,
-                    label = vital.statusLabel
-                )
-            }
-
-            Icon(
-                imageVector = vital.icon,
-                contentDescription = null,
-                tint = vital.accentColor.copy(alpha = 0.3f),
-                modifier = Modifier.size(80.dp)
             )
         }
     }
