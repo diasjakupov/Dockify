@@ -91,3 +91,30 @@ object HealthStatusColors {
     val Alert = Color(0xFFFF7043)
     val Critical = Color(0xFFE53935)
 }
+
+/**
+ * Notion-inspired semantic color tokens for the redesigned UI.
+ */
+object NotionColors {
+    // Backgrounds
+    val BackgroundWarm = Color(0xFFFAFAF9)      // Screen backgrounds
+    val SurfaceWhite = Color(0xFFFFFFFF)         // Cards
+    val SurfaceSecondary = Color(0xFFF5F4F2)     // Input fields, avatar backgrounds
+
+    // Text
+    val TextPrimary = Color(0xFF2D2D2D)          // Main text
+    val TextSecondary = Color(0xFF6B7280)        // Labels, icons
+    val TextTertiary = Color(0xFF9CA3AF)         // Captions, units, timestamps
+
+    // Interactive
+    val Accent = Color(0xFF4F7FE8)               // Active states, links, progress
+    val AccentLight = Color(0xFFEEF3FD)          // Accent backgrounds
+
+    // Borders
+    val Divider = Color(0xFFE8E7E4)              // Card borders, separators
+
+    // Status (muted to fit warm palette)
+    val StatusSuccess = Color(0xFF22C55E)        // Good/excellent
+    val StatusWarning = Color(0xFFF59E0B)        // Warning
+    val StatusError = Color(0xFFEF4444)          // Critical/error
+}
