@@ -1,19 +1,14 @@
 package io.diasjakupov.dockify.ui.navigation
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,15 +17,15 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
 import io.diasjakupov.dockify.ui.components.common.TopBarConfig
 
 /**
- * Navigation item configuration for bottom navigation.
+ * The two bottom navigation items.
  */
 enum class BottomNavItem(
     val route: NavKey,
@@ -38,34 +33,22 @@ enum class BottomNavItem(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    HOME(
-        route = HomeRoute,
-        label = "Home",
-        selectedIcon = Icons.Filled.Home,
-        unselectedIcon = Icons.Outlined.Home
-    ),
     HEALTH(
-        route = HealthDashboardRoute,
+        route = HealthRoute,
         label = "Health",
         selectedIcon = Icons.Filled.Favorite,
         unselectedIcon = Icons.Outlined.FavoriteBorder
     ),
-    MAP(
-        route = MapRoute,
+    NEARBY(
+        route = NearbyRoute,
         label = "Nearby",
-        selectedIcon = Icons.Filled.LocationOn,
-        unselectedIcon = Icons.Outlined.LocationOn
-    ),
-    PROFILE(
-        route = ProfileRoute,
-        label = "Profile",
-        selectedIcon = Icons.Filled.Person,
-        unselectedIcon = Icons.Outlined.Person
+        selectedIcon = Icons.Filled.People,
+        unselectedIcon = Icons.Outlined.PeopleAlt
     )
 }
 
 /**
- * Main scaffold with bottom navigation for top-level destinations.
+ * Main scaffold wrapping content with the 2-item bottom navigation bar.
  */
 @Composable
 fun MainScaffoldScreen(
@@ -77,9 +60,7 @@ fun MainScaffoldScreen(
         bottomBar = {
             Nav3BottomNavigation(
                 currentRoute = currentRoute,
-                onNavigate = { item ->
-                    navigator.navigateToRoot(item.route)
-                }
+                onNavigate = { item -> navigator.navigateToRoot(item.route) }
             )
         }
     ) { paddingValues ->
@@ -94,17 +75,19 @@ fun MainScaffoldScreen(
 }
 
 /**
- * Bottom navigation bar using Navigation 3 routes.
+ * Bottom navigation bar with 2 items: Health and Nearby.
  */
 @Composable
 fun Nav3BottomNavigation(
     currentRoute: NavKey,
     onNavigate: (BottomNavItem) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp
+    ) {
         BottomNavItem.entries.forEach { item ->
             val selected = currentRoute == item.route
-
             NavigationBarItem(
                 selected = selected,
                 onClick = { onNavigate(item) },
@@ -121,7 +104,7 @@ fun Nav3BottomNavigation(
 }
 
 /**
- * Placeholder screen for unimplemented destinations.
+ * Placeholder screen for unimplemented destinations (e.g. ForgotPassword, Settings).
  */
 @Composable
 fun PlaceholderScreen(
@@ -144,45 +127,7 @@ fun PlaceholderScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = "Coming soon",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-/**
- * Placeholder content for unimplemented screen content.
- */
-@Composable
-fun PlaceholderContent(title: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = "Coming soon",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+                .padding(paddingValues)
+        )
     }
 }
