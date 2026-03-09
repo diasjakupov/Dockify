@@ -23,27 +23,21 @@ import io.diasjakupov.dockify.features.health.presentation.HealthScreen
 import io.diasjakupov.dockify.features.location.presentation.nearby.NearbyScreen
 import io.diasjakupov.dockify.ui.navigation.AppNavigator
 import io.diasjakupov.dockify.ui.navigation.ForgotPasswordRoute
-import io.diasjakupov.dockify.ui.navigation.HealthDashboardRoute
 import io.diasjakupov.dockify.ui.navigation.HealthDetailRoute
-import io.diasjakupov.dockify.ui.navigation.HomeRoute
+import io.diasjakupov.dockify.ui.navigation.HealthRoute
 import io.diasjakupov.dockify.ui.navigation.LoginRoute
-import io.diasjakupov.dockify.ui.navigation.MapRoute
+import io.diasjakupov.dockify.ui.navigation.MainScaffoldScreen
 import io.diasjakupov.dockify.ui.navigation.NearbyRoute
+import io.diasjakupov.dockify.ui.navigation.PlaceholderScreen
 import io.diasjakupov.dockify.ui.navigation.ProfileRoute
 import io.diasjakupov.dockify.ui.navigation.RegisterRoute
 import io.diasjakupov.dockify.ui.navigation.SettingsRoute
-import io.diasjakupov.dockify.ui.navigation.rememberAppNavigator
 import io.diasjakupov.dockify.ui.navigation.navSavedStateConfig
-import io.diasjakupov.dockify.ui.navigation.MainScaffoldScreen
-import io.diasjakupov.dockify.ui.navigation.PlaceholderScreen
-import io.diasjakupov.dockify.ui.navigation.PlaceholderContent
+import io.diasjakupov.dockify.ui.navigation.rememberAppNavigator
 import io.diasjakupov.dockify.ui.theme.DockifyTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 
-/**
- * CompositionLocal to provide AppNavigator throughout the app.
- */
 val LocalAppNavigator = compositionLocalOf<AppNavigator> {
     error("No AppNavigator provided")
 }
@@ -54,21 +48,17 @@ fun App() {
     DockifyTheme {
         val authRepository: AuthRepository = koinInject()
 
-        // Determine initial route based on auth state
         var initialRoute by remember { mutableStateOf<NavKey?>(null) }
 
         LaunchedEffect(Unit) {
             initialRoute = if (authRepository.isAuthenticated()) {
-                HealthDashboardRoute
+                HealthRoute
             } else {
                 LoginRoute
             }
         }
 
-        // Wait for auth check to complete
-        if (initialRoute == null) {
-            return@DockifyTheme
-        }
+        if (initialRoute == null) return@DockifyTheme
 
         val backStack = rememberNavBackStack(navSavedStateConfig, initialRoute!!)
         val navigator = rememberAppNavigator(backStack)
@@ -82,90 +72,62 @@ fun App() {
                     .background(MaterialTheme.colorScheme.background),
                 entryProvider = { key ->
                     when (key) {
-                        // ============================================
                         // Auth Flow
-                        // ============================================
                         is LoginRoute -> NavEntry(key) {
                             LoginScreen(
-                                onNavigateToHome = { navigator.navigateToHomeAfterLogin() },
+                                onNavigateToHome = { navigator.navigateToHealthAfterLogin() },
                                 onNavigateToRegister = { navigator.navigateToRegister() },
                                 onNavigateToForgotPassword = { navigator.navigateToForgotPassword() }
                             )
                         }
-
                         is RegisterRoute -> NavEntry(key) {
                             RegisterScreen(
                                 onNavigateToLogin = { navigator.navigateToLogin() },
                                 onNavigateBack = { navigator.navigateBack() }
                             )
                         }
-
                         is ForgotPasswordRoute -> NavEntry(key) {
-                            // TODO: Implement ForgotPasswordScreen
                             PlaceholderScreen(
                                 title = "Forgot Password",
                                 onBack = { navigator.navigateBack() }
                             )
                         }
 
-                        // ============================================
-                        // Main Flow (Bottom Navigation)
-                        // ============================================
-                        is HomeRoute -> NavEntry(key) {
-                            // TODO: Implement HomeScreen
-                            MainScaffoldScreen(
-                                currentRoute = key,
-                                navigator = navigator
-                            ) {
-                                PlaceholderContent(title = "Home")
+                        // Tab 1: Health
+                        is HealthRoute -> NavEntry(key) {
+                            MainScaffoldScreen(currentRoute = key, navigator = navigator) {
+                                HealthScreen(
+                                    onNavigateToDetail = { metricType ->
+                                        navigator.navigateToHealthDetail(metricType)
+                                    },
+                                    onNavigateToSettings = { navigator.navigateToSettings() }
+                                )
                             }
                         }
-
-                        is HealthDashboardRoute -> NavEntry(key) {
-                            MainScaffoldScreen(
-                                currentRoute = key,
-                                navigator = navigator
-                            ) {
-                                HealthScreen()
-                            }
-                        }
-
                         is HealthDetailRoute -> NavEntry(key) {
-                            // TODO: Implement HealthDetailScreen
                             PlaceholderScreen(
-                                title = "Health Detail: ${key.metricType}",
+                                title = key.metricType,
                                 onBack = { navigator.navigateBack() }
                             )
                         }
 
-                        is MapRoute -> NavEntry(key) {
-                            MainScaffoldScreen(
-                                currentRoute = key,
-                                navigator = navigator
-                            ) {
-                                NearbyScreen()
-                            }
-                        }
-
+                        // Tab 2: Nearby
                         is NearbyRoute -> NavEntry(key) {
-                            // TODO: Implement NearbyScreen
-                            PlaceholderScreen(
-                                title = "Nearby Users",
-                                onBack = { navigator.navigateBack() }
-                            )
-                        }
-
-                        is ProfileRoute -> NavEntry(key) {
-                            MainScaffoldScreen(
-                                currentRoute = key,
-                                navigator = navigator
-                            ) {
-                                PlaceholderContent(title = "Profile")
+                            MainScaffoldScreen(currentRoute = key, navigator = navigator) {
+                                NearbyScreen(
+                                    onNavigateToProfile = { navigator.navigateToProfile() }
+                                )
                             }
                         }
 
+                        // Pushed screens
+                        is ProfileRoute -> NavEntry(key) {
+                            PlaceholderScreen(
+                                title = "Profile",
+                                onBack = { navigator.navigateBack() }
+                            )
+                        }
                         is SettingsRoute -> NavEntry(key) {
-                            // TODO: Implement SettingsScreen
                             PlaceholderScreen(
                                 title = "Settings",
                                 onBack = { navigator.navigateBack() }
