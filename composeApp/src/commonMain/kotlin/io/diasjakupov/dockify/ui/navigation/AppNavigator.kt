@@ -14,34 +14,19 @@ import androidx.navigation3.runtime.NavKey
 class AppNavigator(
     private val backStack: NavBackStack<NavKey>
 ) {
-    /**
-     * Navigate to a new destination by adding it to the back stack.
-     */
     fun navigateTo(route: NavKey) {
         backStack.add(route)
     }
 
-    /**
-     * Navigate back by removing the last entry from the back stack.
-     * @return true if navigation occurred, false if back stack is empty
-     */
     fun navigateBack(): Boolean {
         return backStack.removeLastOrNull() != null
     }
 
-    /**
-     * Clear the back stack and navigate to a new root destination.
-     */
     fun navigateToRoot(route: NavKey) {
         backStack.clear()
         backStack.add(route)
     }
 
-    /**
-     * Pop up to a specific route in the back stack.
-     * @param route The route to pop up to
-     * @param inclusive If true, also removes the target route
-     */
     fun popUpTo(route: NavKey, inclusive: Boolean = false) {
         val index = backStack.indexOfLast { it == route }
         if (index >= 0) {
@@ -52,14 +37,8 @@ class AppNavigator(
         }
     }
 
-    /**
-     * Get the current route (top of the back stack).
-     */
     fun currentRoute(): NavKey? = backStack.lastOrNull()
 
-    /**
-     * Check if a specific route is in the back stack.
-     */
     fun hasRoute(route: NavKey): Boolean = backStack.contains(route)
 
     // ============================================
@@ -78,35 +57,25 @@ class AppNavigator(
         navigateTo(ForgotPasswordRoute)
     }
 
-    /**
-     * Navigate to home after successful login, clearing auth screens.
-     */
-    fun navigateToHomeAfterLogin() {
-        navigateToRoot(HomeRoute)
+    /** Navigate to Health tab after successful login, clearing auth screens. */
+    fun navigateToHealthAfterLogin() {
+        navigateToRoot(HealthRoute)
     }
 
     // ============================================
     // Main Flow Navigation
     // ============================================
 
-    fun navigateToHome() {
-        navigateTo(HomeRoute)
-    }
-
     fun navigateToHealth() {
-        navigateTo(HealthDashboardRoute)
+        navigateToRoot(HealthRoute)
     }
 
     fun navigateToHealthDetail(metricType: String) {
         navigateTo(HealthDetailRoute(metricType))
     }
 
-    fun navigateToMap() {
-        navigateTo(MapRoute)
-    }
-
     fun navigateToNearby() {
-        navigateTo(NearbyRoute)
+        navigateToRoot(NearbyRoute)
     }
 
     fun navigateToProfile() {
@@ -117,22 +86,11 @@ class AppNavigator(
         navigateTo(SettingsRoute)
     }
 
-    // ============================================
-    // Top-Level Navigation (Bottom Bar)
-    // ============================================
-
-    /**
-     * Navigate to a top-level destination.
-     * This replaces the current back stack with the new destination.
-     */
     fun navigateToTopLevel(destination: TopLevelDestination) {
         navigateToRoot(destination.route)
     }
 }
 
-/**
- * Remember an AppNavigator instance scoped to the composition.
- */
 @Composable
 fun rememberAppNavigator(backStack: NavBackStack<NavKey>): AppNavigator {
     return remember(backStack) {
