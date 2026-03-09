@@ -27,13 +27,14 @@ data class Dimensions(
 
     // Card dimensions
     val cardPadding: Dp = 16.dp,
-    val cardElevation: Dp = 2.dp,
-    val cardCornerRadius: Dp = 16.dp,
+    val cardElevation: Dp = 0.dp,          // Notion uses border, not shadow
+    val cardCornerRadius: Dp = 12.dp,
 
     // Health metric card dimensions
     val metricCardHeight: Dp = 120.dp,
     val metricCardMinWidth: Dp = 160.dp,
-    val metricIconSize: Dp = 48.dp,
+    val cardBorderWidth: Dp = 1.dp,        // Notion-style 1px border
+    val metricIconSize: Dp = 20.dp,        // small icon inside card
 
     // Bottom navigation
     val bottomNavHeight: Dp = 80.dp,
@@ -60,7 +61,12 @@ data class Dimensions(
     val iconSizeSmall: Dp = 16.dp,
     val iconSizeMedium: Dp = 24.dp,
     val iconSizeLarge: Dp = 32.dp,
-    val iconSizeXLarge: Dp = 48.dp
+    val iconSizeXLarge: Dp = 48.dp,
+
+    // Profile / avatar
+    val avatarSizeLarge: Dp = 64.dp,
+    val avatarSizeMedium: Dp = 36.dp,      // top bar avatar
+    val statusDotSize: Dp = 8.dp           // health status dot
 )
 
 val LocalDimensions = staticCompositionLocalOf { Dimensions() }
