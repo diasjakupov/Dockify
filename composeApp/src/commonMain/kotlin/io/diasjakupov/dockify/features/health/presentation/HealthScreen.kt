@@ -56,6 +56,7 @@ import io.diasjakupov.dockify.features.health.permission.HealthPermissionEffect
 import io.diasjakupov.dockify.features.health.permission.HealthPermissionHandler
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionEffect
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionHandler
+import io.diasjakupov.dockify.features.health.presentation.components.ActivityProgressCard
 import io.diasjakupov.dockify.features.health.presentation.components.HealthVitalsSection
 import io.diasjakupov.dockify.features.health.presentation.components.RecommendationCard
 import io.diasjakupov.dockify.features.health.presentation.components.StatusOverviewCard
@@ -380,6 +381,14 @@ private fun HealthScreenContent(
                         style = DockifyTextStyles.sectionHeader,
                         color = NotionColors.TextTertiary,
                         modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                    )
+                }
+
+                // Activity Progress Card
+                item(key = "activity_progress") {
+                    ActivityProgressCard(
+                        progress = state.activityProgress,
+                        modifier = Modifier.padding(horizontal = 0.dp)
                     )
                 }
 
