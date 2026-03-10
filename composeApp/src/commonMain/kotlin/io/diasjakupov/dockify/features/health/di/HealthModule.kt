@@ -9,6 +9,7 @@ import io.diasjakupov.dockify.features.health.data.datasource.HealthRemoteDataSo
 import io.diasjakupov.dockify.features.health.data.repository.HealthRepositoryImpl
 import io.diasjakupov.dockify.features.health.domain.repository.HealthRepository
 import io.diasjakupov.dockify.features.health.domain.usecase.CheckHealthPermissionsUseCase
+import io.diasjakupov.dockify.features.health.domain.usecase.GetHealthMetricsUseCase
 import io.diasjakupov.dockify.features.health.domain.usecase.ReadPlatformHealthDataUseCase
 import io.diasjakupov.dockify.features.health.domain.usecase.RequestHealthPermissionsUseCase
 import io.diasjakupov.dockify.features.health.domain.usecase.SyncHealthDataUseCase
@@ -72,6 +73,12 @@ val healthModule: Module = module {
 
     factory {
         CheckHealthPermissionsUseCase(
+            healthRepository = get()
+        )
+    }
+
+    factory {
+        GetHealthMetricsUseCase(
             healthRepository = get()
         )
     }
