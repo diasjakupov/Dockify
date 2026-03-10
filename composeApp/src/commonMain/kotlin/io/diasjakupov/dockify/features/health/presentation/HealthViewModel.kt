@@ -74,10 +74,12 @@ class HealthViewModel(
     private fun syncHealthData() {
         if (!currentState.canSync) return
 
+        println("[HealthViewModel] syncHealthData: starting manual sync")
         updateState { copy(isSyncing = true) }
 
         launch(
             onError = { e ->
+                println("[HealthViewModel] syncHealthData: exception - ${e.message}")
                 updateState {
                     copy(
                         isSyncing = false,
@@ -87,14 +89,17 @@ class HealthViewModel(
             }
         ) {
             val userId = getCurrentUserId() ?: run {
+                println("[HealthViewModel] syncHealthData: no userId, aborting")
                 updateState { copy(isSyncing = false) }
                 return@launch
             }
 
             val location = getLocationSilently()
+            println("[HealthViewModel] syncHealthData: userId=$userId location=$location")
 
             when (val result = syncHealthDataUseCase(userId, allMetricTypes, location)) {
                 is Resource.Success -> {
+                    println("[HealthViewModel] syncHealthData: success")
                     updateState {
                         copy(
                             isSyncing = false,
@@ -103,10 +108,10 @@ class HealthViewModel(
                     }
                     emitEffect(HealthEffect.SyncSuccess)
                     emitEffect(HealthEffect.ShowSnackbar("Health data synced successfully"))
-                    // Data is already displayed from platform - no GET needed
                 }
                 is Resource.Error -> {
                     val errorMessage = result.error.toUserMessage()
+                    println("[HealthViewModel] syncHealthData: error - ${result.error} -> $errorMessage")
                     updateState {
                         copy(
                             isSyncing = false,
@@ -176,9 +181,16 @@ class HealthViewModel(
     private fun loadRecommendation() {
         launch {
             val userId = getCurrentUserId() ?: return@launch
+            println("[HealthViewModel] loadRecommendation: userId=$userId")
             when (val result = getRecommendationUseCase(userId)) {
-                is Resource.Success -> updateState { copy(recommendation = result.data, isRecommendationLoading = false) }
-                is Resource.Error -> updateState { copy(isRecommendationLoading = false) }
+                is Resource.Success -> {
+                    println("[HealthViewModel] loadRecommendation: success - ${result.data.content.take(60)}")
+                    updateState { copy(recommendation = result.data, isRecommendationLoading = false) }
+                }
+                is Resource.Error -> {
+                    println("[HealthViewModel] loadRecommendation: error - ${result.error}")
+                    updateState { copy(isRecommendationLoading = false) }
+                }
             }
         }
     }
@@ -235,13 +247,16 @@ class HealthViewModel(
     private fun checkPermissionsAndAutoSync() {
         // Prevent duplicate auto-syncs
         if (currentState.hasInitiallyLoadedPlatformData) {
+            println("[HealthViewModel] checkPermissionsAndAutoSync: skipped (already loaded)")
             return
         }
 
+        println("[HealthViewModel] checkPermissionsAndAutoSync: starting")
         updateState { copy(loadingState = LoadingState.LOADING) }
 
         launch(
             onError = { e ->
+                println("[HealthViewModel] checkPermissionsAndAutoSync: exception - ${e.message}")
                 updateState {
                     copy(
                         loadingState = LoadingState.IDLE,
@@ -255,6 +270,7 @@ class HealthViewModel(
 
             // Step 1: Check if platform is available
             val isAvailable = checkHealthPermissionsUseCase.isPlatformAvailable()
+            println("[HealthViewModel] platform available: $isAvailable")
             if (!isAvailable) {
                 updateState {
                     copy(
@@ -265,28 +281,24 @@ class HealthViewModel(
                         error = "Health Connect/HealthKit is not available on this device"
                     )
                 }
-                // No fallback to GET - platform is required
                 return@launch
             }
 
             // Step 2: Check permissions
             val hasPermissions = checkHealthPermissionsUseCase.hasPermissions(allMetricTypes)
+            println("[HealthViewModel] hasPermissions: $hasPermissions")
 
             if (hasPermissions) {
-                // Permissions already granted - proceed with auto-sync
                 updateState { copy(permissionState = PermissionState.Granted) }
-                // Request location permission (non-blocking, in background)
                 requestLocationPermissionSilently()
                 autoSyncWithOptimisticUpdate(userId)
             } else {
-                // Permissions not granted - request them first
                 updateState {
                     copy(
                         permissionState = PermissionState.Unknown,
                         loadingState = LoadingState.IDLE
                     )
                 }
-                // Request permissions - this will trigger the system permission dialog
                 requestPermissionsAndThenSync(userId)
             }
         }
@@ -297,8 +309,10 @@ class HealthViewModel(
      * Called on initial screen load when permissions are not yet granted.
      */
     private fun requestPermissionsAndThenSync(userId: String) {
+        println("[HealthViewModel] requestPermissionsAndThenSync: requesting permissions for userId=$userId")
         launch(
             onError = { e ->
+                println("[HealthViewModel] requestPermissionsAndThenSync: exception - ${e.message}")
                 updateState {
                     copy(
                         permissionState = PermissionState.Denied,
@@ -311,6 +325,7 @@ class HealthViewModel(
         ) {
             // Request permission - this will show the system dialog and suspend until user responds
             val granted = healthPermissionHandler.requestHealthPermissions()
+            println("[HealthViewModel] requestPermissionsAndThenSync: granted=$granted")
 
             if (granted) {
                 updateState { copy(permissionState = PermissionState.Granted) }
@@ -319,6 +334,7 @@ class HealthViewModel(
                 // Permissions granted - proceed with auto-sync
                 autoSyncWithOptimisticUpdate(userId)
             } else {
+                println("[HealthViewModel] requestPermissionsAndThenSync: permission denied by user")
                 updateState {
                     copy(
                         permissionState = PermissionState.Denied,
@@ -337,6 +353,7 @@ class HealthViewModel(
     private fun autoSyncWithOptimisticUpdate(userId: String) {
         launch(
             onError = { e ->
+                println("[HealthViewModel] autoSyncWithOptimisticUpdate: exception - ${e.message}")
                 updateState {
                     copy(
                         loadingState = LoadingState.IDLE,
@@ -346,12 +363,15 @@ class HealthViewModel(
                 }
             }
         ) {
-            // Step 1: Read from platform (Health Connect/HealthKit)
+            println("[HealthViewModel] reading platform health data (${allMetricTypes.size} types)")
             when (val platformResult = readPlatformHealthDataUseCase(allMetricTypes)) {
                 is Resource.Success -> {
                     val platformMetrics = platformResult.data
+                    println("[HealthViewModel] platform read success: ${platformMetrics.size} metrics")
+                    platformMetrics.forEach { m ->
+                        println("[HealthViewModel]   ${m.type.name} = ${m.value} ${m.unit}")
+                    }
 
-                    // Step 2: OPTIMISTIC UPDATE - Display platform data immediately
                     updateState {
                         copy(
                             healthMetrics = platformMetrics,
@@ -362,13 +382,11 @@ class HealthViewModel(
                         )
                     }
 
-                    // Load recommendations based on platform data
                     loadRecommendation()
-
-                    // Step 3: Upload to backend in background
                     syncToBackendInBackground(userId, platformMetrics)
                 }
                 is Resource.Error -> {
+                    println("[HealthViewModel] platform read error: ${platformResult.error}")
                     updateState {
                         copy(
                             loadingState = LoadingState.IDLE,
@@ -376,7 +394,6 @@ class HealthViewModel(
                             hasInitiallyLoadedPlatformData = true
                         )
                     }
-                    // No fallback to GET - show error with retry option
                 }
             }
         }
@@ -389,6 +406,7 @@ class HealthViewModel(
     private fun syncToBackendInBackground(userId: String, metrics: List<HealthMetric>) {
         launch(
             onError = { e ->
+                println("[HealthViewModel] syncToBackendInBackground: exception - ${e.message}")
                 updateState {
                     copy(
                         isBackgroundSyncing = false,
@@ -398,7 +416,9 @@ class HealthViewModel(
                 emitEffect(HealthEffect.BackgroundSyncFailed)
             }
         ) {
+            println("[HealthViewModel] syncToBackendInBackground: userId=$userId metrics=${metrics.size}")
             val location = getLocationSilently()
+            println("[HealthViewModel] syncToBackendInBackground: location=$location")
 
             val healthData = HealthData(
                 userId = userId,
@@ -408,6 +428,7 @@ class HealthViewModel(
 
             when (val result = healthRepository.syncHealthData(healthData)) {
                 is Resource.Success -> {
+                    println("[HealthViewModel] syncToBackendInBackground: success")
                     updateState {
                         copy(
                             isBackgroundSyncing = false,
@@ -417,10 +438,12 @@ class HealthViewModel(
                     }
                 }
                 is Resource.Error -> {
+                    val errorMessage = result.error.toUserMessage()
+                    println("[HealthViewModel] syncToBackendInBackground: error - ${result.error} -> $errorMessage")
                     updateState {
                         copy(
                             isBackgroundSyncing = false,
-                            backgroundSyncError = result.error.toUserMessage()
+                            backgroundSyncError = errorMessage
                         )
                     }
                     emitEffect(HealthEffect.BackgroundSyncFailed)
@@ -436,6 +459,7 @@ class HealthViewModel(
     private fun retryBackgroundSync() {
         if (currentState.isBackgroundSyncing) return
 
+        println("[HealthViewModel] retryBackgroundSync: starting")
         launch(
             onError = { /* handled in syncToBackendInBackground */ }
         ) {
@@ -443,8 +467,11 @@ class HealthViewModel(
             val metrics = currentState.healthMetrics
 
             if (metrics.isNotEmpty()) {
+                println("[HealthViewModel] retryBackgroundSync: userId=$userId metrics=${metrics.size}")
                 updateState { copy(isBackgroundSyncing = true, backgroundSyncError = null) }
                 syncToBackendInBackground(userId, metrics)
+            } else {
+                println("[HealthViewModel] retryBackgroundSync: no metrics to sync, skipping")
             }
         }
     }
