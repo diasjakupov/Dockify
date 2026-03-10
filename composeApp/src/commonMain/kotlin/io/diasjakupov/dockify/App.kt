@@ -20,6 +20,7 @@ import io.diasjakupov.dockify.features.auth.domain.repository.AuthRepository
 import io.diasjakupov.dockify.features.auth.presentation.login.LoginScreen
 import io.diasjakupov.dockify.features.auth.presentation.register.RegisterScreen
 import io.diasjakupov.dockify.features.health.presentation.HealthScreen
+import io.diasjakupov.dockify.features.auth.presentation.profile.ProfileScreen
 import io.diasjakupov.dockify.features.location.presentation.nearby.NearbyScreen
 import io.diasjakupov.dockify.ui.navigation.AppNavigator
 import io.diasjakupov.dockify.ui.navigation.ForgotPasswordRoute
@@ -122,9 +123,9 @@ fun App() {
 
                         // Pushed screens
                         is ProfileRoute -> NavEntry(key) {
-                            PlaceholderScreen(
-                                title = "Profile",
-                                onBack = { navigator.navigateBack() }
+                            ProfileScreen(
+                                onNavigateBack = { navigator.navigateBack() },
+                                onNavigateToLogin = { navigator.navigateToLogin() }
                             )
                         }
                         is SettingsRoute -> NavEntry(key) {

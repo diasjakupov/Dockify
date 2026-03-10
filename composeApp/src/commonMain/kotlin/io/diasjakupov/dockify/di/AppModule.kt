@@ -4,6 +4,7 @@ import io.diasjakupov.dockify.core.di.coreModule
 import io.diasjakupov.dockify.features.auth.di.authDataModule
 import io.diasjakupov.dockify.features.auth.di.authDomainModule
 import io.diasjakupov.dockify.features.auth.presentation.di.authPresentationModule
+import io.diasjakupov.dockify.features.auth.presentation.profile.profilePresentationModule
 import io.diasjakupov.dockify.features.health.di.healthModule
 import io.diasjakupov.dockify.features.health.presentation.di.healthPresentationModule
 import io.diasjakupov.dockify.features.location.di.locationModule
@@ -24,5 +25,6 @@ fun appModules(): List<Module> = listOf(
     recommendationModule,
     authDataModule,
     authDomainModule,
-    authPresentationModule
+    authPresentationModule,
+    profilePresentationModule
 )
