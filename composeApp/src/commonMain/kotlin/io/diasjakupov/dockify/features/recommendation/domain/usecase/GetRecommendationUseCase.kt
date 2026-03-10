@@ -15,9 +15,11 @@ class GetRecommendationUseCase(
     /**
      * Fetches a health recommendation from the backend.
      *
+     * @param userId The ID of the user to fetch a recommendation for
      * @return Resource containing the Recommendation or an error
      */
-    suspend operator fun invoke(): Resource<Recommendation, DataError> {
-        return recommendationRepository.getRecommendation()
+    suspend operator fun invoke(userId: String): Resource<Recommendation, DataError> {
+        if (userId.isBlank()) return Resource.Error(DataError.Auth.UNAUTHORIZED)
+        return recommendationRepository.getRecommendation(userId)
     }
 }

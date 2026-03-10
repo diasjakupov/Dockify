@@ -6,6 +6,7 @@ import io.diasjakupov.dockify.core.network.safeApiCall
 import io.diasjakupov.dockify.features.recommendation.data.dto.RecommendationResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 
 /**
  * Implementation of RecommendationRemoteDataSource using Ktor HttpClient.
@@ -18,9 +19,11 @@ class RecommendationRemoteDataSourceImpl(
     private val baseUrl: String
 ) : RecommendationRemoteDataSource {
 
-    override suspend fun getRecommendation(): Resource<RecommendationResponseDto, DataError> {
+    override suspend fun getRecommendation(userId: String): Resource<RecommendationResponseDto, DataError> {
         return safeApiCall {
-            httpClient.get("$baseUrl/api/v1/recommendation")
+            httpClient.get("$baseUrl/api/v1/recommendation") {
+                parameter("user_id", userId)
+            }
         }
     }
 }

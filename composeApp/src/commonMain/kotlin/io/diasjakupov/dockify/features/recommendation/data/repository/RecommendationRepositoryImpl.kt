@@ -21,8 +21,8 @@ class RecommendationRepositoryImpl(
     private val localDataSource: RecommendationLocalDataSource
 ) : RecommendationRepository {
 
-    override suspend fun getRecommendation(): Resource<Recommendation, DataError> {
-        return when (val result = remoteDataSource.getRecommendation()) {
+    override suspend fun getRecommendation(userId: String): Resource<Recommendation, DataError> {
+        return when (val result = remoteDataSource.getRecommendation(userId)) {
             is Resource.Success -> {
                 val recommendation = result.data.toDomain()
                 localDataSource.cacheRecommendation(result.data)

@@ -14,9 +14,10 @@ interface RecommendationRepository {
     /**
      * Fetches a health recommendation from the backend.
      *
+     * @param userId The ID of the user to fetch a recommendation for
      * @return Resource containing the Recommendation or an error
      */
-    suspend fun getRecommendation(): Resource<Recommendation, DataError>
+    suspend fun getRecommendation(userId: String): Resource<Recommendation, DataError>
 
     /**
      * Observes cached recommendation from local storage.

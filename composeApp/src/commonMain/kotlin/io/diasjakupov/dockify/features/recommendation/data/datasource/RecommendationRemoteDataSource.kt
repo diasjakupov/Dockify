@@ -12,7 +12,8 @@ interface RecommendationRemoteDataSource {
     /**
      * Fetches a recommendation from the backend.
      *
+     * @param userId The ID of the user to fetch a recommendation for
      * @return Resource containing the recommendation response DTO or an error
      */
-    suspend fun getRecommendation(): Resource<RecommendationResponseDto, DataError>
+    suspend fun getRecommendation(userId: String): Resource<RecommendationResponseDto, DataError>
 }

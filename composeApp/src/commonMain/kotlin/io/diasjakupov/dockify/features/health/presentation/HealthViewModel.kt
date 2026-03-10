@@ -174,25 +174,11 @@ class HealthViewModel(
     }
 
     private fun loadRecommendation() {
-        updateState { copy(isRecommendationLoading = true) }
-
-        launch(
-            onError = {
-                updateState { copy(isRecommendationLoading = false) }
-            }
-        ) {
-            when (val result = getRecommendationUseCase()) {
-                is Resource.Success -> {
-                    updateState {
-                        copy(
-                            recommendation = result.data,
-                            isRecommendationLoading = false
-                        )
-                    }
-                }
-                is Resource.Error -> {
-                    updateState { copy(isRecommendationLoading = false) }
-                }
+        launch {
+            val userId = getCurrentUserId() ?: return@launch
+            when (val result = getRecommendationUseCase(userId)) {
+                is Resource.Success -> updateState { copy(recommendation = result.data, isRecommendationLoading = false) }
+                is Resource.Error -> updateState { copy(isRecommendationLoading = false) }
             }
         }
     }
