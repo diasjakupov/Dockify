@@ -86,6 +86,7 @@ private fun HealthMetricType.toIcon(): ImageVector = when (this) {
     HealthMetricType.HEIGHT -> Icons.Default.Height
     HealthMetricType.BODY_TEMPERATURE -> Icons.Default.Thermostat
     HealthMetricType.RESPIRATORY_RATE -> Icons.Default.Air
+    else -> Icons.Default.MonitorHeart
 }
 
 private fun Double.formatValue(): String {

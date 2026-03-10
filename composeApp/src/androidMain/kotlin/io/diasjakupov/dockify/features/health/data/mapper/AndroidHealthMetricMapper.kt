@@ -39,6 +39,7 @@ object AndroidHealthMetricMapper {
             HealthMetricType.HEIGHT -> HeightRecord::class
             HealthMetricType.BODY_TEMPERATURE -> BodyTemperatureRecord::class
             HealthMetricType.RESPIRATORY_RATE -> RespiratoryRateRecord::class
+            else -> null
         }
     }
 
@@ -59,6 +60,7 @@ object AndroidHealthMetricMapper {
             HealthMetricType.HEIGHT -> HealthPermission.getReadPermission(HeightRecord::class)
             HealthMetricType.BODY_TEMPERATURE -> HealthPermission.getReadPermission(BodyTemperatureRecord::class)
             HealthMetricType.RESPIRATORY_RATE -> HealthPermission.getReadPermission(RespiratoryRateRecord::class)
+            else -> ""
         }
     }
 

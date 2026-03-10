@@ -89,6 +89,7 @@ class AndroidHealthPlatformDataSource(
                     HealthMetricType.HEIGHT -> readLatestHeight(startTime, endTime)?.let { metrics.add(it) }
                     HealthMetricType.BODY_TEMPERATURE -> readLatestBodyTemperature(startTime, endTime)?.let { metrics.add(it) }
                     HealthMetricType.RESPIRATORY_RATE -> readLatestRespiratoryRate(startTime, endTime)?.let { metrics.add(it) }
+                    else -> { /* Backend-derived metrics — not read from Health Connect */ }
                 }
             }
 

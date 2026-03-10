@@ -39,7 +39,7 @@ object HealthMetricMapper {
      */
     fun HealthMetric.toDto(): HealthMetricDto {
         return HealthMetricDto(
-            metricType = type.name,
+            metricType = type.backendKey,
             metricValue = value.toString()
         )
     }

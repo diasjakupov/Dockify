@@ -39,6 +39,7 @@ object IOSHealthMetricMapper {
             HealthMetricType.HEIGHT -> HKQuantityTypeIdentifierHeight
             HealthMetricType.BODY_TEMPERATURE -> HKQuantityTypeIdentifierBodyTemperature
             HealthMetricType.RESPIRATORY_RATE -> HKQuantityTypeIdentifierRespiratoryRate
+            else -> null // Backend-derived metrics — not read from HealthKit
         }
     }
 
