@@ -36,7 +36,7 @@ class LocationRemoteDataSourceImpl(
         request: NearestHospitalsRequestDto
     ): Resource<List<HospitalDto>, DataError> {
         return safeApiCall {
-            httpClient.post("$baseUrl/api/v1/location/hospitals") {
+            httpClient.post("$baseUrl/api/v1/hospitals/nearest") {
                 setBody(request)
             }
         }
