@@ -4,12 +4,17 @@ import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.HydrationRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
@@ -89,7 +94,17 @@ class AndroidHealthPlatformDataSource(
                     HealthMetricType.HEIGHT -> readLatestHeight(startTime, endTime)?.let { metrics.add(it) }
                     HealthMetricType.BODY_TEMPERATURE -> readLatestBodyTemperature(startTime, endTime)?.let { metrics.add(it) }
                     HealthMetricType.RESPIRATORY_RATE -> readLatestRespiratoryRate(startTime, endTime)?.let { metrics.add(it) }
-                    else -> { /* Backend-derived metrics — not read from Health Connect */ }
+                    HealthMetricType.FAT_PERCENTAGE -> readLatestBodyFat(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.RESTING_BPM -> readLatestRestingHeartRate(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.MAX_BPM -> readMaxHeartRate(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.AVG_BPM -> readAvgHeartRate(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.SESSION_DURATION_HOURS -> readExerciseSessionDuration(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.WORKOUT_FREQUENCY -> readWorkoutFrequency(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.DAILY_CALORIES -> readDailyCalorieIntake(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.WATER_INTAKE_LITERS -> readWaterIntake(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.SLEEP_EFFICIENCY -> readSleepEfficiency(startTime, endTime)?.let { metrics.add(it) }
+                    HealthMetricType.TIME_IN_BED_HOURS -> readTimeInBed(startTime, endTime)?.let { metrics.add(it) }
+                    else -> { /* No Health Connect equivalent — backend-derived or lifestyle flags */ }
                 }
             }
 
@@ -309,5 +324,97 @@ class AndroidHealthPlatformDataSource(
             record.rate,
             record.time.toEpochMilli()
         )
+    }
+
+    private suspend fun readLatestBodyFat(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = BodyFatRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        val record = response.records.lastOrNull() ?: return null
+        return HealthMetric(type = HealthMetricType.FAT_PERCENTAGE, value = record.percentage.value, unit = HealthMetricType.FAT_PERCENTAGE.defaultUnit, timestamp = record.time.toEpochMilli())
+    }
+
+    private suspend fun readLatestRestingHeartRate(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = RestingHeartRateRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        val record = response.records.lastOrNull() ?: return null
+        return HealthMetric(type = HealthMetricType.RESTING_BPM, value = record.beatsPerMinute.toDouble(), unit = HealthMetricType.RESTING_BPM.defaultUnit, timestamp = record.time.toEpochMilli())
+    }
+
+    private suspend fun readMaxHeartRate(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = HeartRateRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        val maxBpm = response.records.flatMap { it.samples }.maxOfOrNull { it.beatsPerMinute } ?: return null
+        return HealthMetric(type = HealthMetricType.MAX_BPM, value = maxBpm.toDouble(), unit = HealthMetricType.MAX_BPM.defaultUnit, timestamp = endTime.toEpochMilli())
+    }
+
+    private suspend fun readAvgHeartRate(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = HeartRateRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        val samples = response.records.flatMap { it.samples }
+        if (samples.isEmpty()) return null
+        val avgBpm = samples.map { it.beatsPerMinute }.average()
+        return HealthMetric(type = HealthMetricType.AVG_BPM, value = avgBpm, unit = HealthMetricType.AVG_BPM.defaultUnit, timestamp = endTime.toEpochMilli())
+    }
+
+    private suspend fun readExerciseSessionDuration(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = ExerciseSessionRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        if (response.records.isEmpty()) return null
+        val totalHours = response.records.sumOf { Duration.between(it.startTime, it.endTime).toMillis() } / (1000.0 * 60 * 60)
+        return HealthMetric(type = HealthMetricType.SESSION_DURATION_HOURS, value = totalHours, unit = HealthMetricType.SESSION_DURATION_HOURS.defaultUnit, timestamp = endTime.toEpochMilli())
+    }
+
+    private suspend fun readWorkoutFrequency(startTime: Instant, endTime: Instant): HealthMetric? {
+        val weekStart = endTime.minus(Duration.ofDays(7))
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = ExerciseSessionRecord::class, timeRangeFilter = TimeRangeFilter.between(weekStart, endTime))
+        )
+        if (response.records.isEmpty()) return null
+        return HealthMetric(type = HealthMetricType.WORKOUT_FREQUENCY, value = response.records.size.toDouble(), unit = HealthMetricType.WORKOUT_FREQUENCY.defaultUnit, timestamp = endTime.toEpochMilli())
+    }
+
+    private suspend fun readDailyCalorieIntake(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = NutritionRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        if (response.records.isEmpty()) return null
+        val totalKcal = response.records.sumOf { it.energy?.inKilocalories ?: 0.0 }
+        if (totalKcal == 0.0) return null
+        return HealthMetric(type = HealthMetricType.DAILY_CALORIES, value = totalKcal, unit = HealthMetricType.DAILY_CALORIES.defaultUnit, timestamp = endTime.toEpochMilli())
+    }
+
+    private suspend fun readWaterIntake(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = HydrationRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        if (response.records.isEmpty()) return null
+        val totalLiters = response.records.sumOf { it.volume.inLiters }
+        return HealthMetric(type = HealthMetricType.WATER_INTAKE_LITERS, value = totalLiters, unit = HealthMetricType.WATER_INTAKE_LITERS.defaultUnit, timestamp = endTime.toEpochMilli())
+    }
+
+    private suspend fun readSleepEfficiency(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = SleepSessionRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        val session = response.records.lastOrNull() ?: return null
+        val timeInBedMillis = Duration.between(session.startTime, session.endTime).toMillis()
+        if (timeInBedMillis == 0L) return null
+        val asleepMillis = session.stages.filter { it.stage == SleepSessionRecord.STAGE_TYPE_SLEEPING }.sumOf { Duration.between(it.startTime, it.endTime).toMillis() }
+        val efficiency = if (asleepMillis > 0) (asleepMillis.toDouble() / timeInBedMillis) * 100.0 else 100.0
+        return HealthMetric(type = HealthMetricType.SLEEP_EFFICIENCY, value = efficiency, unit = HealthMetricType.SLEEP_EFFICIENCY.defaultUnit, timestamp = endTime.toEpochMilli())
+    }
+
+    private suspend fun readTimeInBed(startTime: Instant, endTime: Instant): HealthMetric? {
+        val response = healthConnectClient.readRecords(
+            ReadRecordsRequest(recordType = SleepSessionRecord::class, timeRangeFilter = TimeRangeFilter.between(startTime, endTime))
+        )
+        if (response.records.isEmpty()) return null
+        val totalHours = response.records.sumOf { Duration.between(it.startTime, it.endTime).toMillis() } / (1000.0 * 60 * 60)
+        return HealthMetric(type = HealthMetricType.TIME_IN_BED_HOURS, value = totalHours, unit = HealthMetricType.TIME_IN_BED_HOURS.defaultUnit, timestamp = endTime.toEpochMilli())
     }
 }

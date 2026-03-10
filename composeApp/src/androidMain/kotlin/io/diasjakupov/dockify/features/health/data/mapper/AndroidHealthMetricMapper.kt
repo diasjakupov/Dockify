@@ -3,13 +3,18 @@ package io.diasjakupov.dockify.features.health.data.mapper
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.HydrationRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
@@ -49,18 +54,28 @@ object AndroidHealthMetricMapper {
     fun HealthMetricType.toReadPermission(): String {
         return when (this) {
             HealthMetricType.STEPS -> HealthPermission.getReadPermission(StepsRecord::class)
-            HealthMetricType.HEART_RATE -> HealthPermission.getReadPermission(HeartRateRecord::class)
+            HealthMetricType.HEART_RATE,
+            HealthMetricType.MAX_BPM,
+            HealthMetricType.AVG_BPM -> HealthPermission.getReadPermission(HeartRateRecord::class)
             HealthMetricType.BLOOD_PRESSURE_SYSTOLIC,
             HealthMetricType.BLOOD_PRESSURE_DIASTOLIC -> HealthPermission.getReadPermission(BloodPressureRecord::class)
             HealthMetricType.BLOOD_OXYGEN -> HealthPermission.getReadPermission(OxygenSaturationRecord::class)
-            HealthMetricType.SLEEP_DURATION -> HealthPermission.getReadPermission(SleepSessionRecord::class)
+            HealthMetricType.SLEEP_DURATION,
+            HealthMetricType.SLEEP_EFFICIENCY,
+            HealthMetricType.TIME_IN_BED_HOURS -> HealthPermission.getReadPermission(SleepSessionRecord::class)
             HealthMetricType.CALORIES_BURNED -> HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
             HealthMetricType.DISTANCE -> HealthPermission.getReadPermission(DistanceRecord::class)
             HealthMetricType.WEIGHT -> HealthPermission.getReadPermission(WeightRecord::class)
             HealthMetricType.HEIGHT -> HealthPermission.getReadPermission(HeightRecord::class)
             HealthMetricType.BODY_TEMPERATURE -> HealthPermission.getReadPermission(BodyTemperatureRecord::class)
             HealthMetricType.RESPIRATORY_RATE -> HealthPermission.getReadPermission(RespiratoryRateRecord::class)
-            else -> ""
+            HealthMetricType.FAT_PERCENTAGE -> HealthPermission.getReadPermission(BodyFatRecord::class)
+            HealthMetricType.RESTING_BPM -> HealthPermission.getReadPermission(RestingHeartRateRecord::class)
+            HealthMetricType.SESSION_DURATION_HOURS,
+            HealthMetricType.WORKOUT_FREQUENCY -> HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+            HealthMetricType.DAILY_CALORIES -> HealthPermission.getReadPermission(NutritionRecord::class)
+            HealthMetricType.WATER_INTAKE_LITERS -> HealthPermission.getReadPermission(HydrationRecord::class)
+            else -> "" // AGE, BMI, MOVEMENTS_PER_HOUR, SNORE_TIME, DAY_OF_WEEK, HOUR_STARTED, NOTE_* — no HC equivalent
         }
     }
 
@@ -68,7 +83,7 @@ object AndroidHealthMetricMapper {
      * Converts a list of HealthMetricTypes to Health Connect permission set.
      */
     fun List<HealthMetricType>.toHealthConnectPermissions(): Set<String> {
-        return this.map { it.toReadPermission() }.toSet()
+        return this.map { it.toReadPermission() }.filter { it.isNotEmpty() }.toSet()
     }
 
     /**
