@@ -9,6 +9,9 @@ import io.diasjakupov.dockify.features.health.di.healthModule
 import io.diasjakupov.dockify.features.health.presentation.di.healthPresentationModule
 import io.diasjakupov.dockify.features.location.di.locationModule
 import io.diasjakupov.dockify.features.location.presentation.di.locationPresentationModule
+import io.diasjakupov.dockify.features.documents.di.documentDataModule
+import io.diasjakupov.dockify.features.documents.di.documentDomainModule
+import io.diasjakupov.dockify.features.documents.presentation.di.documentPresentationModule
 import io.diasjakupov.dockify.features.recommendation.di.recommendationModule
 import org.koin.core.module.Module
 
@@ -26,5 +29,8 @@ fun appModules(): List<Module> = listOf(
     authDataModule,
     authDomainModule,
     authPresentationModule,
-    profilePresentationModule
+    profilePresentationModule,
+    documentDataModule,
+    documentDomainModule,
+    documentPresentationModule
 )
