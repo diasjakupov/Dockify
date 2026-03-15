@@ -42,6 +42,11 @@ fun DataError.toUserMessage(): String {
         DataError.Local.WRITE_ERROR -> "Unable to save data."
         DataError.Local.NOT_FOUND -> "Data not found."
 
+        // Document errors
+        DataError.Document.UPLOAD_FAILED -> "Upload failed. Please try again."
+        DataError.Document.FILE_TOO_LARGE -> "File exceeds 10 MB limit."
+        DataError.Document.PICK_CANCELLED -> ""
+
         else -> "An unexpected error occurred."
     }
 }

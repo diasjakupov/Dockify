@@ -60,4 +60,13 @@ sealed interface DataError : Error {
         WRITE_ERROR,
         NOT_FOUND
     }
+
+    /**
+     * Document feature errors.
+     */
+    enum class Document : DataError {
+        UPLOAD_FAILED,
+        FILE_TOO_LARGE,
+        PICK_CANCELLED
+    }
 }
