@@ -21,6 +21,7 @@ import io.diasjakupov.dockify.features.auth.presentation.login.LoginScreen
 import io.diasjakupov.dockify.features.auth.presentation.register.RegisterScreen
 import io.diasjakupov.dockify.features.health.presentation.HealthScreen
 import io.diasjakupov.dockify.features.auth.presentation.profile.ProfileScreen
+import io.diasjakupov.dockify.features.documents.presentation.documents.DocumentsScreen
 import io.diasjakupov.dockify.features.location.presentation.nearby.NearbyScreen
 import io.diasjakupov.dockify.ui.navigation.AppNavigator
 import io.diasjakupov.dockify.ui.navigation.ForgotPasswordRoute
@@ -28,6 +29,7 @@ import io.diasjakupov.dockify.ui.navigation.HealthDetailRoute
 import io.diasjakupov.dockify.ui.navigation.HealthRoute
 import io.diasjakupov.dockify.ui.navigation.LoginRoute
 import io.diasjakupov.dockify.ui.navigation.MainScaffoldScreen
+import io.diasjakupov.dockify.ui.navigation.DocumentsRoute
 import io.diasjakupov.dockify.ui.navigation.NearbyRoute
 import io.diasjakupov.dockify.ui.navigation.PlaceholderScreen
 import io.diasjakupov.dockify.ui.navigation.ProfileRoute
@@ -118,6 +120,13 @@ fun App() {
                                 NearbyScreen(
                                     onNavigateToProfile = { navigator.navigateToProfile() }
                                 )
+                            }
+                        }
+
+                        // Tab 3: Documents
+                        is DocumentsRoute -> NavEntry(key) {
+                            MainScaffoldScreen(currentRoute = key, navigator = navigator) {
+                                DocumentsScreen()
                             }
                         }
 

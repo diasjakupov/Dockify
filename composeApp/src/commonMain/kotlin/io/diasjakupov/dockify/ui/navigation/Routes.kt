@@ -20,7 +20,7 @@ data object RegisterRoute : NavKey
 data object ForgotPasswordRoute : NavKey
 
 // ============================================
-// Main Flow Routes (Bottom Navigation — 2 tabs)
+// Main Flow Routes (Bottom Navigation — 3 tabs)
 // ============================================
 
 /** Tab 1: Combined Health/Home dashboard */
@@ -34,6 +34,10 @@ data class HealthDetailRoute(val metricType: String) : NavKey
 /** Tab 2: Nearby users screen */
 @Serializable
 data object NearbyRoute : NavKey
+
+/** Tab 3: Documents screen */
+@Serializable
+data object DocumentsRoute : NavKey
 
 /** Pushed from Nearby top bar profile icon */
 @Serializable
@@ -56,6 +60,7 @@ val navSavedStateConfig = SavedStateConfiguration {
             subclass(HealthRoute::class, HealthRoute.serializer())
             subclass(HealthDetailRoute::class, HealthDetailRoute.serializer())
             subclass(NearbyRoute::class, NearbyRoute.serializer())
+            subclass(DocumentsRoute::class, DocumentsRoute.serializer())
             subclass(ProfileRoute::class, ProfileRoute.serializer())
             subclass(SettingsRoute::class, SettingsRoute.serializer())
         }
@@ -67,5 +72,6 @@ val navSavedStateConfig = SavedStateConfiguration {
  */
 enum class TopLevelDestination(val route: NavKey) {
     HEALTH(HealthRoute),
-    NEARBY(NearbyRoute)
+    NEARBY(NearbyRoute),
+    DOCUMENTS(DocumentsRoute)
 }

@@ -78,6 +78,10 @@ class AppNavigator(
         navigateToRoot(NearbyRoute)
     }
 
+    fun navigateToDocuments() {
+        navigateToRoot(DocumentsRoute)
+    }
+
     fun navigateToProfile() {
         navigateTo(ProfileRoute)
     }

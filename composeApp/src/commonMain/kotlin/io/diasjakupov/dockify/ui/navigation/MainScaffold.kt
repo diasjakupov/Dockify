@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.Icon
@@ -44,6 +46,12 @@ enum class BottomNavItem(
         label = "Nearby",
         selectedIcon = Icons.Filled.People,
         unselectedIcon = Icons.Outlined.PeopleAlt
+    ),
+    DOCUMENTS(
+        route = DocumentsRoute,
+        label = "Documents",
+        selectedIcon = Icons.Filled.Description,
+        unselectedIcon = Icons.Outlined.Description
     )
 }
 
