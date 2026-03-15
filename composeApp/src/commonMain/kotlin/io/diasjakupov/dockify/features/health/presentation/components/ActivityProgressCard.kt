@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.diasjakupov.dockify.ui.theme.HealthStatusColors
 import io.diasjakupov.dockify.ui.theme.NotionColors
 import kotlin.math.min
 
@@ -43,7 +44,7 @@ fun ActivityProgressCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, NotionColors.Divider, RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -52,7 +53,7 @@ fun ActivityProgressCard(
             label = "Steps",
             displayText = "${progress.steps} / ${progress.stepsGoal} steps",
             fraction = min(progress.steps.toFloat() / progress.stepsGoal, 1f),
-            tintColor = NotionColors.TextPrimary
+            tintColor = HealthStatusColors.Excellent
         )
 
         ActivityProgressItem(
@@ -109,14 +110,14 @@ private fun ActivityProgressItem(
                     text = label,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = NotionColors.TextPrimary
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             Text(
                 text = displayText,
                 style = MaterialTheme.typography.bodySmall,
-                color = NotionColors.TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -126,7 +127,7 @@ private fun ActivityProgressItem(
                 .fillMaxWidth()
                 .height(6.dp)
                 .clip(RoundedCornerShape(3.dp)),
-            trackColor = NotionColors.SurfaceSecondary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
             color = tintColor
         )
     }
