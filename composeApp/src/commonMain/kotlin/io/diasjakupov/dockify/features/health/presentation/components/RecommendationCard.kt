@@ -69,8 +69,8 @@ fun RecommendationCard(
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Mint50.copy(alpha = 0.15f),
-                            SoftBlue50.copy(alpha = 0.15f)
+                            Mint50.copy(alpha = 0.30f),
+                            SoftBlue50.copy(alpha = 0.30f)
                         )
                     )
                 )
@@ -208,7 +208,7 @@ fun RecommendationChip(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(Mint50.copy(alpha = 0.15f))
+            .background(Mint50.copy(alpha = 0.30f))
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Row(
