@@ -171,8 +171,8 @@ object DockifyTextStyles {
     val sectionHeader = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 1.2.sp
+        letterSpacing = 0.8.sp
     )
 }
