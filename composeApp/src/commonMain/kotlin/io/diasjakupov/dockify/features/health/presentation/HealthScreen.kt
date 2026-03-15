@@ -355,6 +355,24 @@ private fun HealthScreenContent(
                     }
                 }
 
+                // Activity Section Header
+                item(key = "activity_header") {
+                    Text(
+                        text = "ACTIVITY",
+                        style = DockifyTextStyles.sectionHeader,
+                        color = NotionColors.TextTertiary,
+                        modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                    )
+                }
+
+                // Activity Progress Card
+                item(key = "activity_progress") {
+                    ActivityProgressCard(
+                        progress = state.activityProgress,
+                        modifier = Modifier.padding(horizontal = 0.dp)
+                    )
+                }
+
                 // AI Recommendation Section Header
                 item(key = "recommendation_header") {
                     Text(
@@ -371,24 +389,6 @@ private fun HealthScreenContent(
                         recommendation = state.recommendation,
                         isLoading = state.isRecommendationLoading,
                         onRefresh = { onAction(HealthAction.RefreshRecommendation) }
-                    )
-                }
-
-                // Activity Section Header
-                item(key = "activity_header") {
-                    Text(
-                        text = "ACTIVITY",
-                        style = DockifyTextStyles.sectionHeader,
-                        color = NotionColors.TextTertiary,
-                        modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
-                    )
-                }
-
-                // Activity Progress Card
-                item(key = "activity_progress") {
-                    ActivityProgressCard(
-                        progress = state.activityProgress,
-                        modifier = Modifier.padding(horizontal = 0.dp)
                     )
                 }
 
