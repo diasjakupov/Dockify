@@ -705,8 +705,17 @@ private fun formatTimestamp(timestamp: Long): String {
     val diff = now - timestamp
     return when {
         diff < 60_000L -> "Just now"
-        diff < 3_600_000L -> "${diff / 60_000L} minutes ago"
-        diff < 86_400_000L -> "${diff / 3_600_000L} hours ago"
-        else -> "${diff / 86_400_000L} days ago"
+        diff < 3_600_000L -> {
+            val mins = diff / 60_000L
+            "$mins ${if (mins == 1L) "minute" else "minutes"} ago"
+        }
+        diff < 86_400_000L -> {
+            val hours = diff / 3_600_000L
+            "$hours ${if (hours == 1L) "hour" else "hours"} ago"
+        }
+        else -> {
+            val days = diff / 86_400_000L
+            "$days ${if (days == 1L) "day" else "days"} ago"
+        }
     }
 }
