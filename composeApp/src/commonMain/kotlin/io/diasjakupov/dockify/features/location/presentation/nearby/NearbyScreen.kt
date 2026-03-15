@@ -147,7 +147,7 @@ private fun NearbyTopBar(
         Text(
             text = "Nearby",
             style = MaterialTheme.typography.titleLarge,
-            color = io.diasjakupov.dockify.ui.theme.NotionColors.TextPrimary,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         IconButton(onClick = onRefresh, enabled = canRefresh) {
@@ -157,7 +157,7 @@ private fun NearbyTopBar(
                 Icon(
                     Icons.Default.Refresh,
                     contentDescription = "Refresh",
-                    tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -165,7 +165,7 @@ private fun NearbyTopBar(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(io.diasjakupov.dockify.ui.theme.NotionColors.SurfaceSecondary)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { onProfileClick() },
             contentAlignment = Alignment.Center
         ) {
@@ -173,7 +173,7 @@ private fun NearbyTopBar(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Profile",
                 modifier = Modifier.size(20.dp),
-                tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -376,7 +376,7 @@ private fun NearbyUsersContent(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surface)
-                        .border(1.dp, io.diasjakupov.dockify.ui.theme.NotionColors.Divider, RoundedCornerShape(12.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -385,12 +385,12 @@ private fun NearbyUsersContent(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(io.diasjakupov.dockify.ui.theme.NotionColors.StatusSuccess)
+                            .background(MaterialTheme.colorScheme.primary)
                     )
                     Text(
                         text = "Your location is active",
                         style = MaterialTheme.typography.bodySmall,
-                        color = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -401,7 +401,7 @@ private fun NearbyUsersContent(
             Text(
                 text = "${nearbyUsers.size} PEOPLE NEARBY",
                 style = io.diasjakupov.dockify.ui.theme.DockifyTextStyles.sectionHeader,
-                color = io.diasjakupov.dockify.ui.theme.NotionColors.TextTertiary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
@@ -420,7 +420,7 @@ private fun NearbyUserCard(user: NearbyUser) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, io.diasjakupov.dockify.ui.theme.NotionColors.Divider, RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -429,33 +429,33 @@ private fun NearbyUserCard(user: NearbyUser) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(io.diasjakupov.dockify.ui.theme.NotionColors.SurfaceSecondary),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
-                tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextSecondary
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = "User ${user.userId.take(8)}",
                 style = MaterialTheme.typography.titleSmall,
-                color = io.diasjakupov.dockify.ui.theme.NotionColors.TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = "Nearby",
                 style = MaterialTheme.typography.bodySmall,
-                color = io.diasjakupov.dockify.ui.theme.NotionColors.TextTertiary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
-            tint = io.diasjakupov.dockify.ui.theme.NotionColors.TextTertiary
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
