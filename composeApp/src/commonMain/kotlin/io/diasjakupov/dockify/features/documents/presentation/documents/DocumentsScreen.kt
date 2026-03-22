@@ -42,7 +42,6 @@ import io.diasjakupov.dockify.features.documents.presentation.components.Documen
 import io.diasjakupov.dockify.features.documents.presentation.components.UploadFab
 import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
 import io.diasjakupov.dockify.ui.components.common.TopBarConfig
-import io.diasjakupov.dockify.ui.theme.NotionColors
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
@@ -105,7 +104,6 @@ fun DocumentsScreen() {
 
     DockifyScaffold(
         topBarConfig = TopBarConfig.Simple(title = "Documents"),
-        containerColor = NotionColors.BackgroundWarm,
         floatingActionButton = {
             UploadFab(
                 isUploading = state.isUploading,
@@ -121,8 +119,7 @@ fun DocumentsScreen() {
         ) {
             when {
                 state.isLoading -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = NotionColors.Accent
+                    modifier = Modifier.align(Alignment.Center)
                 )
                 state.documents.isEmpty() -> {
                     Column(
@@ -136,14 +133,14 @@ fun DocumentsScreen() {
                             modifier = Modifier
                                 .size(80.dp)
                                 .clip(CircleShape)
-                                .background(NotionColors.AccentLight),
+                                .background(MaterialTheme.colorScheme.tertiaryContainer),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Description,
                                 contentDescription = null,
                                 modifier = Modifier.size(40.dp),
-                                tint = NotionColors.Accent
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer
                             )
                         }
                         Spacer(Modifier.height(20.dp))
@@ -151,13 +148,13 @@ fun DocumentsScreen() {
                             text = "No documents yet",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = NotionColors.TextPrimary
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
                             text = "Tap + to upload files from your device",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = NotionColors.TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -180,12 +177,12 @@ fun DocumentsScreen() {
                                     text = "All Files",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = NotionColors.TextSecondary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     text = "${state.documents.size} file${if (state.documents.size != 1) "s" else ""}",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = NotionColors.TextTertiary
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

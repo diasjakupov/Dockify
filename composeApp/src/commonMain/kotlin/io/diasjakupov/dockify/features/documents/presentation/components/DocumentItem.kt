@@ -44,7 +44,6 @@ import io.diasjakupov.dockify.features.documents.domain.model.Document
 import io.diasjakupov.dockify.ui.theme.ErrorRed50
 import io.diasjakupov.dockify.ui.theme.Mint50
 import io.diasjakupov.dockify.ui.theme.Navy40
-import io.diasjakupov.dockify.ui.theme.NotionColors
 import io.diasjakupov.dockify.ui.theme.SoftBlue50
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -68,8 +67,8 @@ fun DocumentItem(
                 onLongClick = { showDelete = true }
             ),
         shape = RoundedCornerShape(12.dp),
-        color = NotionColors.SurfaceWhite,
-        border = BorderStroke(1.dp, NotionColors.Divider)
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -92,7 +91,7 @@ fun DocumentItem(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(typeInfo.accentColor.copy(alpha = 0.10f)),
+                    .background(typeInfo.accentColor.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -114,7 +113,7 @@ fun DocumentItem(
                     text = document.fileName,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = NotionColors.TextPrimary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -122,7 +121,7 @@ fun DocumentItem(
                 Text(
                     text = "${document.fileSize.toReadableSize()} · ${document.uploadedAt.take(10)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = NotionColors.TextTertiary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -138,7 +137,7 @@ fun DocumentItem(
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = "Delete",
-                        tint = NotionColors.StatusError,
+                        tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -156,7 +155,7 @@ private fun fileTypeInfo(contentType: String): FileTypeInfo = when {
     contentType.contains("pdf") -> FileTypeInfo("PDF", ErrorRed50)
     contentType.contains("word") || contentType.contains("docx") -> FileTypeInfo("DOC", Navy40)
     contentType.contains("sheet") || contentType.contains("xlsx") -> FileTypeInfo("XLS", Mint50)
-    else -> FileTypeInfo("FILE", NotionColors.TextSecondary)
+    else -> FileTypeInfo("FILE", SoftBlue50)
 }
 
 private fun Long.toReadableSize(): String = when {
