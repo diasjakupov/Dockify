@@ -99,6 +99,7 @@ private fun formatDistance(km: Double): String {
 @Composable
 fun NearbyScreen(
     onNavigateToProfile: () -> Unit = {},
+    onOpenGpsSettings: () -> Unit = {},
     viewModel: NearbyViewModel = koinViewModel(),
     permissionHandler: LocationPermissionHandler = koinInject()
 ) {
@@ -112,9 +113,7 @@ fun NearbyScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is NearbyEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
-                is NearbyEffect.OpenGpsSettings -> {
-                    // Platform-specific GPS settings navigation handled per-platform
-                }
+                is NearbyEffect.OpenGpsSettings -> onOpenGpsSettings()
                 is NearbyEffect.LocationFetched -> {
                     // Location successfully fetched — map will update via state
                 }
@@ -329,7 +328,9 @@ private fun UserDistanceChip(
     user: NearbyUser,
     currentLocation: Location
 ) {
-    val distance = distanceKm(currentLocation, user.location)
+    val distanceText = remember(currentLocation, user.location) {
+        formatDistance(distanceKm(currentLocation, user.location))
+    }
     Surface(
         shape = RoundedCornerShape(50),
         color = MaterialTheme.colorScheme.primaryContainer,
@@ -347,7 +348,7 @@ private fun UserDistanceChip(
                     .background(MaterialTheme.colorScheme.primary)
             )
             Text(
-                text = formatDistance(distance),
+                text = distanceText,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -360,8 +361,8 @@ private fun NearbyUserCard(
     user: NearbyUser,
     currentLocation: Location?
 ) {
-    val distanceText = currentLocation?.let {
-        formatDistance(distanceKm(it, user.location))
+    val distanceText = remember(currentLocation, user.location) {
+        currentLocation?.let { formatDistance(distanceKm(it, user.location)) }
     }
 
     Row(
