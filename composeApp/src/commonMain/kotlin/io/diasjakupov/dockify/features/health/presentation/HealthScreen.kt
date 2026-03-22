@@ -68,6 +68,7 @@ import io.diasjakupov.dockify.ui.theme.DockifyTextStyles
 import io.diasjakupov.dockify.ui.theme.NotionColors
 import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
 import io.diasjakupov.dockify.ui.components.common.TopBarConfig
+import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -320,6 +321,19 @@ private fun HealthScreenContent(
     onNavigateToDetail: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    // Hoist animation state to top of composable to avoid conditional state reads
+    val animatedKeys = remember {
+        listOf("status_overview", "activity_progress", "recommendation", "vitals", "last_sync")
+    }
+    val visibleSections = remember { mutableStateMapOf<String, Boolean>() }
+
+    LaunchedEffect(Unit) {
+        animatedKeys.forEachIndexed { index, key ->
+            delay(80L * index)
+            visibleSections[key] = true
+        }
+    }
+
     when {
         state.isLoading && state.healthMetrics.isEmpty() -> {
             LoadingContent(modifier = modifier)
@@ -332,19 +346,6 @@ private fun HealthScreenContent(
             )
         }
         else -> {
-            // Section keys in render order (skip header text items — only animate card items)
-            val animatedKeys = remember {
-                listOf("status_overview", "activity_progress", "recommendation", "vitals", "last_sync")
-            }
-            val visibleSections = remember { mutableStateMapOf<String, Boolean>() }
-
-            LaunchedEffect(Unit) {
-                animatedKeys.forEachIndexed { index, key ->
-                    kotlinx.coroutines.delay(80L * index)
-                    visibleSections[key] = true
-                }
-            }
-
             LazyColumn(
                 modifier = modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
