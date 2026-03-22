@@ -26,8 +26,8 @@ actual fun MapView(
     nearbyUsers: List<NearbyUser>,
     modifier: Modifier
 ) {
-    // Show a blank white placeholder when no Maps API key is configured
-    if (BuildConfig.MAPS_API_KEY.isBlank()) {
+    // Show a blank white placeholder when no real Maps API key is configured
+    if (BuildConfig.MAPS_API_KEY.isBlank() || BuildConfig.MAPS_API_KEY == "PLACEHOLDER_KEY") {
         Box(modifier = modifier.background(Color.White))
         return
     }
