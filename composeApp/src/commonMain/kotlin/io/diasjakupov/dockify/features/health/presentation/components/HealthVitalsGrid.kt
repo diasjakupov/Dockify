@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -182,14 +183,18 @@ private fun VitalCard(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                val isWholeNumber = vital.rawValue % 1.0 == 0.0
+                val isWholeNumber = kotlin.math.abs(vital.rawValue - kotlin.math.round(vital.rawValue)) < 1e-9
+
+                // Both animations always declared (Compose rules: no state in conditionals)
+                val animatedInt by animateIntAsState(
+                    targetValue = vital.rawValue.toInt(),
+                    animationSpec = tween(durationMillis = 800),
+                    label = "vital_counter_${vital.type.name}"
+                )
+                var shown by remember { mutableStateOf(false) }
+                LaunchedEffect(vital.rawValue) { shown = true }
 
                 if (isWholeNumber) {
-                    val animatedInt by animateIntAsState(
-                        targetValue = vital.rawValue.toInt(),
-                        animationSpec = tween(durationMillis = 800),
-                        label = "vital_counter_${vital.type.name}"
-                    )
                     Text(
                         text = animatedInt.toString(),
                         style = MaterialTheme.typography.headlineSmall,
@@ -197,11 +202,10 @@ private fun VitalCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 } else {
-                    var shown by remember { mutableStateOf(false) }
-                    LaunchedEffect(Unit) { shown = true }
                     AnimatedVisibility(
                         visible = shown,
-                        enter = fadeIn(tween(400))
+                        enter = fadeIn(tween(400)),
+                        exit = fadeOut(tween(400))
                     ) {
                         Text(
                             text = vital.value,
