@@ -74,7 +74,7 @@ actual fun rememberCameraPickerLauncher(onResult: (PickedFile?) -> Unit): () -> 
                 ?: UIApplication.sharedApplication.keyWindow?.rootViewController // iOS 12/13 fallback
             rootVC?.presentViewController(picker, animated = true, completion = null)
         } else {
-            onResult(null)
+            currentOnResult(null)
         }
     }
 }
