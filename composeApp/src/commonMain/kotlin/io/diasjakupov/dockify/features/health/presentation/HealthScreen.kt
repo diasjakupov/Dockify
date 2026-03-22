@@ -1,10 +1,12 @@
 package io.diasjakupov.dockify.features.health.presentation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -329,6 +332,19 @@ private fun HealthScreenContent(
             )
         }
         else -> {
+            // Section keys in render order (skip header text items — only animate card items)
+            val animatedKeys = remember {
+                listOf("status_overview", "activity_progress", "recommendation", "vitals", "last_sync")
+            }
+            val visibleSections = remember { mutableStateMapOf<String, Boolean>() }
+
+            LaunchedEffect(Unit) {
+                animatedKeys.forEachIndexed { index, key ->
+                    kotlinx.coroutines.delay(80L * index)
+                    visibleSections[key] = true
+                }
+            }
+
             LazyColumn(
                 modifier = modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
@@ -348,10 +364,18 @@ private fun HealthScreenContent(
                 // Status Overview Card
                 if (state.vitalMetrics.isNotEmpty()) {
                     item(key = "status_overview") {
-                        StatusOverviewCard(
-                            vitals = state.vitalMetrics.toVitalSigns(),
-                            modifier = Modifier.padding(horizontal = 0.dp)
-                        )
+                        AnimatedVisibility(
+                            visible = visibleSections["status_overview"] == true,
+                            enter = fadeIn(tween(300)) + slideInVertically(
+                                animationSpec = tween(300),
+                                initialOffsetY = { it / 4 }
+                            )
+                        ) {
+                            StatusOverviewCard(
+                                vitals = state.vitalMetrics.toVitalSigns(),
+                                modifier = Modifier.padding(horizontal = 0.dp)
+                            )
+                        }
                     }
                 }
 
@@ -367,10 +391,18 @@ private fun HealthScreenContent(
 
                 // Activity Progress Card
                 item(key = "activity_progress") {
-                    ActivityProgressCard(
-                        progress = state.activityProgress,
-                        modifier = Modifier.padding(horizontal = 0.dp)
-                    )
+                    AnimatedVisibility(
+                        visible = visibleSections["activity_progress"] == true,
+                        enter = fadeIn(tween(300)) + slideInVertically(
+                            animationSpec = tween(300),
+                            initialOffsetY = { it / 4 }
+                        )
+                    ) {
+                        ActivityProgressCard(
+                            progress = state.activityProgress,
+                            modifier = Modifier.padding(horizontal = 0.dp)
+                        )
+                    }
                 }
 
                 // AI Recommendation Section Header
@@ -385,11 +417,19 @@ private fun HealthScreenContent(
 
                 // AI Recommendation Card
                 item(key = "recommendation") {
-                    RecommendationCard(
-                        recommendation = state.recommendation,
-                        isLoading = state.isRecommendationLoading,
-                        onRefresh = { onAction(HealthAction.RefreshRecommendation) }
-                    )
+                    AnimatedVisibility(
+                        visible = visibleSections["recommendation"] == true,
+                        enter = fadeIn(tween(300)) + slideInVertically(
+                            animationSpec = tween(300),
+                            initialOffsetY = { it / 4 }
+                        )
+                    ) {
+                        RecommendationCard(
+                            recommendation = state.recommendation,
+                            isLoading = state.isRecommendationLoading,
+                            onRefresh = { onAction(HealthAction.RefreshRecommendation) }
+                        )
+                    }
                 }
 
                 // Vitals Section Header
@@ -407,17 +447,33 @@ private fun HealthScreenContent(
                 // Health Vitals Section
                 if (state.vitalMetrics.isNotEmpty()) {
                     item(key = "vitals") {
-                        HealthVitalsSection(
-                            metrics = state.vitalMetrics,
-                            onClick = onNavigateToDetail
-                        )
+                        AnimatedVisibility(
+                            visible = visibleSections["vitals"] == true,
+                            enter = fadeIn(tween(300)) + slideInVertically(
+                                animationSpec = tween(300),
+                                initialOffsetY = { it / 4 }
+                            )
+                        ) {
+                            HealthVitalsSection(
+                                metrics = state.vitalMetrics,
+                                onClick = onNavigateToDetail
+                            )
+                        }
                     }
                 }
 
                 // Last sync info
                 state.lastSyncTimestamp?.let { timestamp ->
                     item(key = "last_sync") {
-                        LastSyncInfo(timestamp = timestamp)
+                        AnimatedVisibility(
+                            visible = visibleSections["last_sync"] == true,
+                            enter = fadeIn(tween(300)) + slideInVertically(
+                                animationSpec = tween(300),
+                                initialOffsetY = { it / 4 }
+                            )
+                        ) {
+                            LastSyncInfo(timestamp = timestamp)
+                        }
                     }
                 }
 
