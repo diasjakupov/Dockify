@@ -191,7 +191,7 @@ private fun VitalCard(
                     animationSpec = tween(durationMillis = 800),
                     label = "vital_counter_${vital.type.name}"
                 )
-                var shown by remember { mutableStateOf(false) }
+                var shown by remember(vital.rawValue) { mutableStateOf(false) }
                 LaunchedEffect(vital.rawValue) { shown = true }
 
                 if (isWholeNumber) {
