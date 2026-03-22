@@ -7,14 +7,15 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +25,26 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.diasjakupov.dockify.features.documents.domain.model.Document
+import io.diasjakupov.dockify.ui.theme.Navy20
+import io.diasjakupov.dockify.ui.theme.Navy30
+import io.diasjakupov.dockify.ui.theme.Mint10
+import io.diasjakupov.dockify.ui.theme.Mint20
+import io.diasjakupov.dockify.ui.theme.SoftBlue10
+import io.diasjakupov.dockify.ui.theme.SoftBlue20
+import kotlinx.coroutines.launch
+
+private object Strings {
+    const val TITLE = "Add Document"
+    const val CANCEL = "Cancel"
+    const val CAMERA_LABEL = "Camera"
+    const val CAMERA_SUBLABEL = "Take photo"
+    const val GALLERY_LABEL = "Gallery"
+    const val GALLERY_SUBLABEL = "Pick image"
+    const val FILES_LABEL = "Files"
+    const val FILES_SUBLABEL = "Browse"
+    const val RECENT = "Recent"
+    const val FORMATS_HINT = "Supported: PDF, Images, DOCX, XLSX"
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +56,7 @@ fun AddDocumentBottomSheet(
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -55,13 +77,17 @@ fun AddDocumentBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Add Document",
+                    text = Strings.TITLE,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.primary)
+                TextButton(
+                    onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                    }
+                ) {
+                    Text(Strings.CANCEL, color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -74,27 +100,36 @@ fun AddDocumentBottomSheet(
             ) {
                 SourceCard(
                     icon = Icons.Default.PhotoCamera,
-                    label = "Camera",
-                    sublabel = "Take photo",
-                    gradient = Brush.linearGradient(listOf(Color(0xFF1E2A3A), Color(0xFF1A2230))),
+                    label = Strings.CAMERA_LABEL,
+                    sublabel = Strings.CAMERA_SUBLABEL,
+                    gradient = Brush.linearGradient(listOf(Navy20, Navy30)),
                     modifier = Modifier.weight(1f),
-                    onClick = { onPickFromCamera(); onDismiss() }
+                    onClick = {
+                        onPickFromCamera()
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                    }
                 )
                 SourceCard(
                     icon = Icons.Default.Image,
-                    label = "Gallery",
-                    sublabel = "Pick image",
-                    gradient = Brush.linearGradient(listOf(Color(0xFF2A1E3A), Color(0xFF221A30))),
+                    label = Strings.GALLERY_LABEL,
+                    sublabel = Strings.GALLERY_SUBLABEL,
+                    gradient = Brush.linearGradient(listOf(SoftBlue10, SoftBlue20)),
                     modifier = Modifier.weight(1f),
-                    onClick = { onPickFromGallery(); onDismiss() }
+                    onClick = {
+                        onPickFromGallery()
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                    }
                 )
                 SourceCard(
                     icon = Icons.Default.FolderOpen,
-                    label = "Files",
-                    sublabel = "Browse",
-                    gradient = Brush.linearGradient(listOf(Color(0xFF1E3A2A), Color(0xFF1A302A))),
+                    label = Strings.FILES_LABEL,
+                    sublabel = Strings.FILES_SUBLABEL,
+                    gradient = Brush.linearGradient(listOf(Mint10, Mint20)),
                     modifier = Modifier.weight(1f),
-                    onClick = { onPickFromFiles(); onDismiss() }
+                    onClick = {
+                        onPickFromFiles()
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                    }
                 )
             }
 
@@ -102,7 +137,7 @@ fun AddDocumentBottomSheet(
             if (recentDocuments.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Recent",
+                    text = Strings.RECENT,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -132,13 +167,13 @@ fun AddDocumentBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.ArrowUpward,
+                    imageVector = Icons.Default.Info,
                     contentDescription = null,
                     modifier = Modifier.size(14.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Supported: PDF, Images, DOCX, XLSX",
+                    text = Strings.FORMATS_HINT,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -172,18 +207,18 @@ private fun SourceCard(
                 imageVector = icon,
                 contentDescription = label,
                 modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = Color.White
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = Color.White
             )
             Text(
                 text = sublabel,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White.copy(alpha = 0.7f)
             )
         }
     }
