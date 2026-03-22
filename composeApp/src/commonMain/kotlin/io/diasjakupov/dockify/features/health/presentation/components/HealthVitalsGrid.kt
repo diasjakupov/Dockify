@@ -1,5 +1,9 @@
 package io.diasjakupov.dockify.features.health.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +31,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +64,7 @@ data class VitalSign(
     val label: String,
     val value: String,
     val unit: String,
+    val rawValue: Double,
     val status: VitalStatus,
     val statusLabel: String,
     val accentColor: Color
@@ -172,12 +182,35 @@ private fun VitalCard(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = vital.value,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                val isWholeNumber = vital.rawValue % 1.0 == 0.0
+
+                if (isWholeNumber) {
+                    val animatedInt by animateIntAsState(
+                        targetValue = vital.rawValue.toInt(),
+                        animationSpec = tween(durationMillis = 800),
+                        label = "vital_counter_${vital.type.name}"
+                    )
+                    Text(
+                        text = animatedInt.toString(),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                } else {
+                    var shown by remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) { shown = true }
+                    AnimatedVisibility(
+                        visible = shown,
+                        enter = fadeIn(tween(400))
+                    ) {
+                        Text(
+                            text = vital.value,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
                 Text(
                     text = vital.unit,
                     style = MaterialTheme.typography.bodyMedium,
@@ -239,6 +272,7 @@ internal fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
                 label = "Heart Rate",
                 value = metric.value.toInt().toString(),
                 unit = metric.unit,
+                rawValue = metric.value,
                 status = getHeartRateStatus(metric.value),
                 statusLabel = getHeartRateStatusLabel(metric.value),
                 accentColor = Color(0xFFE53935)
@@ -249,6 +283,7 @@ internal fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
                 label = "Blood Oxygen",
                 value = metric.value.toInt().toString(),
                 unit = metric.unit,
+                rawValue = metric.value,
                 status = getBloodOxygenStatus(metric.value),
                 statusLabel = getBloodOxygenStatusLabel(metric.value),
                 accentColor = Color(0xFF42A5F5)
@@ -259,6 +294,7 @@ internal fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
                 label = "Sleep",
                 value = metric.value.formatOneDecimal(),
                 unit = metric.unit,
+                rawValue = metric.value,
                 status = getSleepStatus(metric.value),
                 statusLabel = getSleepStatusLabel(metric.value),
                 accentColor = Color(0xFF7E57C2)
@@ -269,6 +305,7 @@ internal fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
                 label = "Blood Pressure",
                 value = metric.value.toInt().toString(),
                 unit = metric.unit,
+                rawValue = metric.value,
                 status = getBloodPressureStatus(metric.value),
                 statusLabel = getBloodPressureStatusLabel(metric.value),
                 accentColor = Color(0xFFFF7043)
@@ -279,6 +316,7 @@ internal fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
                 label = "Weight",
                 value = metric.value.formatOneDecimal(),
                 unit = metric.unit,
+                rawValue = metric.value,
                 status = VitalStatus.NORMAL,
                 statusLabel = "Tracked",
                 accentColor = Color(0xFF26A69A)
@@ -289,6 +327,7 @@ internal fun List<HealthMetric>.toVitalSigns(): List<VitalSign> {
                 label = "Temperature",
                 value = metric.value.formatOneDecimal(),
                 unit = metric.unit,
+                rawValue = metric.value,
                 status = getTemperatureStatus(metric.value),
                 statusLabel = getTemperatureStatusLabel(metric.value),
                 accentColor = Color(0xFFFFB300)
