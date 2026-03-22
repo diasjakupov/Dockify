@@ -1,5 +1,9 @@
 package io.diasjakupov.dockify.features.health.presentation.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +23,9 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,44 +55,70 @@ fun ActivityProgressCard(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Steps
         ActivityProgressItem(
             icon = Icons.AutoMirrored.Filled.DirectionsWalk,
             label = "Steps",
-            displayText = "${progress.steps} / ${progress.stepsGoal} steps",
+            rawIntValue = progress.steps,
+            displayUnit = "/ ${progress.stepsGoal} steps",
             fraction = min(progress.steps.toFloat() / progress.stepsGoal, 1f),
             tintColor = HealthStatusColors.Excellent
         )
 
+        // Calories
         ActivityProgressItem(
             icon = Icons.Default.LocalFireDepartment,
             label = "Calories",
-            displayText = "${progress.calories} / ${progress.caloriesGoal} kcal",
+            rawIntValue = progress.calories,
+            displayUnit = "/ ${progress.caloriesGoal} kcal",
             fraction = min(progress.calories.toFloat() / progress.caloriesGoal, 1f),
             tintColor = NotionColors.StatusWarning
         )
 
+        // Distance — rawIntValue is tenths of a km (e.g. 42 = 4.2 km).
+        // valueFormatter divides by 10.0 so the animated display reads "4.2" rather than "42".
         ActivityProgressItem(
             icon = Icons.Default.Route,
             label = "Distance",
-            displayText = "${"%.1f".format(progress.distance)} / ${"%.1f".format(progress.distanceGoal)} km",
+            rawIntValue = (progress.distance * 10).toInt(),
+            displayUnit = "/ ${progress.distanceGoal.toInt()} km",
             fraction = min((progress.distance / progress.distanceGoal).toFloat(), 1f),
-            tintColor = NotionColors.Accent
+            tintColor = NotionColors.Accent,
+            valueFormatter = { tenths -> "${tenths / 10.0}" }
         )
     }
 }
 
 /**
- * Individual activity progress item with icon, label, progress bar, and stats.
+ * Individual activity progress item with icon, label, animated progress bar, and animated counter.
  */
 @Composable
 private fun ActivityProgressItem(
     icon: ImageVector,
     label: String,
-    displayText: String,
+    rawIntValue: Int,
+    displayUnit: String,
     fraction: Float,
     tintColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    valueFormatter: (Int) -> String = { it.toString() }
 ) {
+    // Animate progress bar from 0 → fraction on first composition
+    val animatedFraction = remember { Animatable(0f) }
+    LaunchedEffect(fraction) {
+        animatedFraction.animateTo(
+            targetValue = fraction.coerceIn(0f, 1f),
+            animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing)
+        )
+    }
+
+    // Counter animation for the numeric value
+    val animatedValue by animateIntAsState(
+        targetValue = rawIntValue,
+        animationSpec = tween(durationMillis = 800),
+        label = "counter_$label"
+    )
+
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -113,16 +146,15 @@ private fun ActivityProgressItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
-
             Text(
-                text = displayText,
+                text = "${valueFormatter(animatedValue)} $displayUnit",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
         LinearProgressIndicator(
-            progress = { fraction },
+            progress = { animatedFraction.value },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(6.dp)
