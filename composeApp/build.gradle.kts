@@ -32,6 +32,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.health.connect)
             implementation(libs.play.services.location)
+            implementation(libs.maps.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
         }
@@ -96,6 +97,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        manifestPlaceholders["MAPS_API_KEY"] = project.findProperty("MAPS_API_KEY") ?: ""
     }
     packaging {
         resources {
