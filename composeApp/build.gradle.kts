@@ -73,7 +73,9 @@ kotlin {
             implementation(libs.datastore.preferences.core)
 
             // FileKit — cross-platform file picker
+            implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs.compose)
+            implementation("io.github.vinceglb:filekit-dialogs:0.13.0")
 
             // Navigation 3
             implementation(libs.navigation3.ui)
