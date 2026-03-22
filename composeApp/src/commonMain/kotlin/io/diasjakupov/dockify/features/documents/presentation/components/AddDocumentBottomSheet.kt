@@ -25,10 +25,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.diasjakupov.dockify.features.documents.domain.model.Document
-import io.diasjakupov.dockify.ui.theme.Navy20
-import io.diasjakupov.dockify.ui.theme.Navy30
 import io.diasjakupov.dockify.ui.theme.Mint10
 import io.diasjakupov.dockify.ui.theme.Mint20
+import io.diasjakupov.dockify.ui.theme.Navy20
+import io.diasjakupov.dockify.ui.theme.Navy30
+import io.diasjakupov.dockify.ui.theme.NotionColors
 import io.diasjakupov.dockify.ui.theme.SoftBlue10
 import io.diasjakupov.dockify.ui.theme.SoftBlue20
 import kotlinx.coroutines.launch
@@ -235,14 +236,14 @@ private fun RecentDocumentThumbnail(document: Document) {
         modifier = Modifier
             .size(56.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .background(NotionColors.SurfaceSecondary),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
             contentDescription = document.fileName,
             modifier = Modifier.size(28.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = NotionColors.TextSecondary
         )
     }
 }
