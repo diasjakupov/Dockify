@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import io.diasjakupov.dockify.ui.theme.HealthStatusColors
 import io.diasjakupov.dockify.ui.theme.NotionColors
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * Activity progress card displaying steps, calories, and distance with progress bars.
@@ -80,11 +81,11 @@ fun ActivityProgressCard(
         ActivityProgressItem(
             icon = Icons.Default.Route,
             label = "Distance",
-            rawIntValue = (progress.distance * 10).toInt(),
-            displayUnit = "/ ${progress.distanceGoal.toInt()} km",
+            rawIntValue = (progress.distance * 10).roundToInt(),
+            displayUnit = "/ ${"%.1f".format(progress.distanceGoal)} km",
             fraction = min((progress.distance / progress.distanceGoal).toFloat(), 1f),
             tintColor = NotionColors.Accent,
-            valueFormatter = { tenths -> "${tenths / 10.0}" }
+            valueFormatter = { tenths -> "%.1f".format(tenths / 10.0) }
         )
     }
 }
