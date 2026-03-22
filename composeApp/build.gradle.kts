@@ -72,6 +72,9 @@ kotlin {
             // DataStore
             implementation(libs.datastore.preferences.core)
 
+            // FileKit — cross-platform file picker
+            implementation(libs.filekit.dialogs.compose)
+
             // Navigation 3
             implementation(libs.navigation3.ui)
             implementation(libs.lifecycle.viewmodel.navigation3)
