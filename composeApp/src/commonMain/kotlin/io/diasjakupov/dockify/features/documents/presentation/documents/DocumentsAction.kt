@@ -13,6 +13,8 @@ sealed interface DocumentsAction : UiAction {
     data object PickFromGallery : DocumentsAction
     /** Launches file picker (effect sent to screen) */
     data object PickFromFiles : DocumentsAction
+    /** Launches camera picker (effect sent to screen) */
+    data object PickFromCamera : DocumentsAction
     /** Screen delivers picked file after launcher returns */
     data class FileSelected(val file: PickedFile) : DocumentsAction
     /** Screen reports picker cancelled */

@@ -118,7 +118,8 @@ fun App() {
                         is NearbyRoute -> NavEntry(key) {
                             MainScaffoldScreen(currentRoute = key, navigator = navigator) {
                                 NearbyScreen(
-                                    onNavigateToProfile = { navigator.navigateToProfile() }
+                                    onNavigateToProfile = { navigator.navigateToProfile() },
+                                    onOpenGpsSettings = { }
                                 )
                             }
                         }

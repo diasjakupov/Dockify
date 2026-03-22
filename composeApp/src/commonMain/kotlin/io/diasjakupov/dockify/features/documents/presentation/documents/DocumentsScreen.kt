@@ -19,20 +19,24 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.ui.text.style.TextAlign
-import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
-import io.diasjakupov.dockify.ui.components.common.TopBarConfig
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.diasjakupov.dockify.features.documents.presentation.components.AddDocumentBottomSheet
 import io.diasjakupov.dockify.features.documents.presentation.components.DocumentItem
-import io.diasjakupov.dockify.features.documents.presentation.components.FilePickerBottomSheet
 import io.diasjakupov.dockify.features.documents.presentation.components.UploadFab
+import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
+import io.diasjakupov.dockify.ui.components.common.TopBarConfig
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -40,31 +44,50 @@ fun DocumentsScreen() {
     val viewModel: DocumentsViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-    // Platform file picker launchers
-    val filePickerLauncher = rememberFilePickerLauncher { file ->
+    // FileKit gallery launcher (images + video)
+    val galleryLauncher = rememberFilePickerLauncher(type = FileKitType.ImageAndVideo) { file ->
+        if (file != null) {
+            coroutineScope.launch {
+                viewModel.onAction(DocumentsAction.FileSelected(file.toPicked()))
+            }
+        } else {
+            viewModel.onAction(DocumentsAction.PickCancelled)
+        }
+    }
+
+    // FileKit file launcher (documents)
+    val fileLauncher = rememberFilePickerLauncher(
+        type = FileKitType.File(extensions = setOf("pdf", "docx", "xlsx", "txt", "png", "jpg", "jpeg"))
+    ) { file ->
+        if (file != null) {
+            coroutineScope.launch {
+                viewModel.onAction(DocumentsAction.FileSelected(file.toPicked()))
+            }
+        } else {
+            viewModel.onAction(DocumentsAction.PickCancelled)
+        }
+    }
+
+    // Camera launcher (expect/actual)
+    val cameraLauncher = rememberCameraPickerLauncher { file ->
         if (file != null) viewModel.onAction(DocumentsAction.FileSelected(file))
         else viewModel.onAction(DocumentsAction.PickCancelled)
     }
-    val galleryPickerLauncher = rememberGalleryPickerLauncher { file ->
-        if (file != null) viewModel.onAction(DocumentsAction.FileSelected(file))
-        else viewModel.onAction(DocumentsAction.PickCancelled)
-    }
 
-    // Load documents on first composition
     LaunchedEffect(Unit) {
         viewModel.onAction(DocumentsAction.LoadDocuments)
     }
 
-    // Collect effects
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is DocumentsEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
-                is DocumentsEffect.LaunchFilePicker -> filePickerLauncher()
-                is DocumentsEffect.LaunchGalleryPicker -> galleryPickerLauncher()
+                is DocumentsEffect.LaunchFilePicker -> fileLauncher.launch()
+                is DocumentsEffect.LaunchGalleryPicker -> galleryLauncher.launch()
+                is DocumentsEffect.LaunchCameraPicker -> cameraLauncher()
                 is DocumentsEffect.OpenDocumentFile -> {
-                    // TODO: implement platform-specific file viewing (Android: FileProvider intent; iOS: QuickLook)
                     snackbarHostState.showSnackbar("Download complete: ${effect.fileName}")
                 }
             }
@@ -135,16 +158,16 @@ fun DocumentsScreen() {
         }
     }
 
-    // File picker bottom sheet
     if (state.showFilePicker) {
-        FilePickerBottomSheet(
+        AddDocumentBottomSheet(
+            recentDocuments = state.documents,
+            onPickFromCamera = { viewModel.onAction(DocumentsAction.PickFromCamera) },
             onPickFromGallery = { viewModel.onAction(DocumentsAction.PickFromGallery) },
             onPickFromFiles = { viewModel.onAction(DocumentsAction.PickFromFiles) },
             onDismiss = { viewModel.onAction(DocumentsAction.FilePickerDismissed) }
         )
     }
 
-    // Delete confirmation dialog
     if (state.pendingDeleteId != null) {
         AlertDialog(
             onDismissRequest = { viewModel.onAction(DocumentsAction.CancelDeleteDocument) },

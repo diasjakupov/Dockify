@@ -12,27 +12,35 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,22 +49,57 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.diasjakupov.dockify.features.location.domain.model.Location
 import io.diasjakupov.dockify.features.location.domain.model.NearbyUser
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionEffect
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionHandler
-import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
-import io.diasjakupov.dockify.ui.components.common.TopBarConfig
+import io.diasjakupov.dockify.ui.theme.DockifyTextStyles
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
 
-/**
- * Nearby screen displaying nearby users based on location.
- */
+// ---------------------------------------------------------------------------
+// Distance helpers (pure Kotlin, no platform deps)
+// ---------------------------------------------------------------------------
+
+private fun distanceKm(from: Location, to: Location): Double {
+    val earthRadiusKm = 6371.0
+    val dLat = Math.toRadians(to.latitude - from.latitude)
+    val dLon = Math.toRadians(to.longitude - from.longitude)
+    val a = sin(dLat / 2).pow(2) +
+            cos(Math.toRadians(from.latitude)) *
+            cos(Math.toRadians(to.latitude)) *
+            sin(dLon / 2).pow(2)
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    return earthRadiusKm * c
+}
+
+private fun formatDistance(km: Double): String {
+    return if (km < 1.0) {
+        val m = (km * 1000).toInt()
+        "${m}m"
+    } else {
+        val rounded = (km * 10).toInt() / 10.0
+        "${rounded}km"
+    }
+}
+
+// ---------------------------------------------------------------------------
+// NearbyScreen
+// ---------------------------------------------------------------------------
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NearbyScreen(
     onNavigateToProfile: () -> Unit = {},
+    onOpenGpsSettings: () -> Unit = {},
     viewModel: NearbyViewModel = koinViewModel(),
     permissionHandler: LocationPermissionHandler = koinInject()
 ) {
@@ -70,119 +113,328 @@ fun NearbyScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is NearbyEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
-                is NearbyEffect.OpenGpsSettings -> {
-                    // Platform-specific GPS settings navigation
-                }
+                is NearbyEffect.OpenGpsSettings -> onOpenGpsSettings()
                 is NearbyEffect.LocationFetched -> {
-                    // Location successfully fetched
+                    // Location successfully fetched — map will update via state
                 }
             }
         }
     }
 
-    DockifyScaffold(
-        topBarConfig = TopBarConfig.Custom {
-            NearbyTopBar(
+    // Determine whether the bottom sheet should be shown
+    val showSheet = !state.isLoading &&
+            !state.needsPermission &&
+            !state.isGpsDisabled &&
+            state.error == null &&
+            state.hasNearbyUsers
+
+    val sheetState = rememberStandardBottomSheetState(
+        initialValue = if (showSheet) SheetValue.PartiallyExpanded else SheetValue.Hidden,
+        skipHiddenState = false
+    )
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+
+    LaunchedEffect(showSheet) {
+        if (showSheet) {
+            scaffoldState.bottomSheetState.partialExpand()
+        } else {
+            scaffoldState.bottomSheetState.hide()
+        }
+    }
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetContent = {
+            if (showSheet) {
+                NearbyUsersSheetContent(
+                    nearbyUsers = state.nearbyUsers,
+                    currentLocation = state.currentLocation
+                )
+            } else {
+                // Empty placeholder when sheet is hidden
+                Box(modifier = Modifier.height(1.dp))
+            }
+        },
+        sheetPeekHeight = if (showSheet) 160.dp else 0.dp,
+        sheetShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        sheetContainerColor = MaterialTheme.colorScheme.surface,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = Color.Transparent
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Base map layer — always visible when permission is granted
+            if (state.permissionState == LocationPermissionState.Granted) {
+                MapView(
+                    userLocation = state.currentLocation,
+                    nearbyUsers = state.nearbyUsers,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            // Full-screen overlays (shown when map is not the focus)
+            when {
+                state.isLoading -> LoadingContent()
+                state.needsPermission -> PermissionRequiredContent(
+                    onRequestPermission = { viewModel.onAction(NearbyAction.RequestPermission) }
+                )
+                state.isGpsDisabled -> GpsDisabledContent(
+                    onOpenSettings = { viewModel.onAction(NearbyAction.OpenLocationSettings) }
+                )
+                state.error != null -> ErrorContent(
+                    errorMessage = state.error!!,
+                    onRetry = { viewModel.onAction(NearbyAction.RetryLastAction) },
+                    onDismiss = { viewModel.onAction(NearbyAction.DismissError) }
+                )
+                !state.hasNearbyUsers &&
+                        state.permissionState == LocationPermissionState.Granted &&
+                        state.hasInitiallyLoaded -> EmptyContent()
+            }
+
+            // Floating top bar overlay — always on top
+            NearbyTopBarOverlay(
                 isRefreshing = state.isManualRefreshing,
                 canRefresh = state.canRefresh,
                 onRefresh = { viewModel.onAction(NearbyAction.RefreshNearbyUsers) },
                 onProfileClick = onNavigateToProfile
             )
-        },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Top Bar Overlay
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun NearbyTopBarOverlay(
+    isRefreshing: Boolean,
+    canRefresh: Boolean,
+    onRefresh: () -> Unit,
+    onProfileClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+            tonalElevation = 2.dp
         ) {
-            when {
-                state.isLoading -> {
-                    LoadingContent()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Nearby",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+
+                IconButton(onClick = onRefresh, enabled = canRefresh) {
+                    if (isRefreshing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = "Refresh",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-                state.needsPermission -> {
-                    PermissionRequiredContent(
-                        onRequestPermission = { viewModel.onAction(NearbyAction.RequestPermission) }
+
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { onProfileClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-                state.isGpsDisabled -> {
-                    GpsDisabledContent(
-                        onOpenSettings = { viewModel.onAction(NearbyAction.OpenLocationSettings) }
-                    )
-                }
-                state.error != null -> {
-                    ErrorContent(
-                        errorMessage = state.error!!,
-                        onRetry = { viewModel.onAction(NearbyAction.RetryLastAction) },
-                        onDismiss = { viewModel.onAction(NearbyAction.DismissError) }
-                    )
-                }
-                state.hasNearbyUsers -> {
-                    NearbyUsersContent(
-                        nearbyUsers = state.nearbyUsers,
-                        currentLocation = state.currentLocation
-                    )
-                }
-                else -> {
-                    EmptyContent()
                 }
             }
         }
     }
 }
 
+// ---------------------------------------------------------------------------
+// Bottom Sheet Content
+// ---------------------------------------------------------------------------
+
 @Composable
-private fun NearbyTopBar(
-    isRefreshing: Boolean,
-    canRefresh: Boolean,
-    onRefresh: () -> Unit,
-    onProfileClick: () -> Unit
+private fun NearbyUsersSheetContent(
+    nearbyUsers: List<NearbyUser>,
+    currentLocation: Location?
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .navigationBarsPadding()
     ) {
-        Text(
-            text = "Nearby",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        IconButton(onClick = onRefresh, enabled = canRefresh) {
-            if (isRefreshing) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-            } else {
-                Icon(
-                    Icons.Default.Refresh,
-                    contentDescription = "Refresh",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+        // Peek row — distance chips
+        if (currentLocation != null) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(nearbyUsers.take(5)) { user ->
+                    UserDistanceChip(
+                        user = user,
+                        currentLocation = currentLocation
+                    )
+                }
             }
         }
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable { onProfileClick() },
-            contentAlignment = Alignment.Center
+
+        // Section header
+        Text(
+            text = "${nearbyUsers.size} PEOPLE NEARBY",
+            style = DockifyTextStyles.sectionHeader,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+
+        // Full user list
+        LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Profile",
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            items(nearbyUsers) { user ->
+                NearbyUserCard(user = user, currentLocation = currentLocation)
+            }
+        }
+    }
+}
+
+@Composable
+private fun UserDistanceChip(
+    user: NearbyUser,
+    currentLocation: Location
+) {
+    val distanceText = remember(currentLocation, user.location) {
+        formatDistance(distanceKm(currentLocation, user.location))
+    }
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        tonalElevation = 1.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+            )
+            Text(
+                text = distanceText,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
     }
 }
 
 @Composable
+private fun NearbyUserCard(
+    user: NearbyUser,
+    currentLocation: Location?
+) {
+    val distanceText = remember(currentLocation, user.location) {
+        currentLocation?.let { formatDistance(distanceKm(it, user.location)) }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "User ${user.userId.take(8)}",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (distanceText != null) {
+                Text(
+                    text = distanceText + " away",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Text(
+                    text = "Nearby",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer
+        ) {
+            Text(
+                text = distanceText ?: "–",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Full-screen overlays
+// ---------------------------------------------------------------------------
+
+@Composable
 private fun LoadingContent() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -205,7 +457,9 @@ private fun PermissionRequiredContent(
     onRequestPermission: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -245,7 +499,9 @@ private fun GpsDisabledContent(
     onOpenSettings: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -293,7 +549,9 @@ private fun ErrorContent(
     onDismiss: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -327,7 +585,9 @@ private fun ErrorContent(
 @Composable
 private fun EmptyContent() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.75f)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -356,115 +616,4 @@ private fun EmptyContent() {
             )
         }
     }
-}
-
-@Composable
-private fun NearbyUsersContent(
-    nearbyUsers: List<NearbyUser>,
-    currentLocation: io.diasjakupov.dockify.features.location.domain.model.Location?
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Location status row
-        currentLocation?.let {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                    Text(
-                        text = "Your location is active",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        // Section header
-        item {
-            Text(
-                text = "${nearbyUsers.size} PEOPLE NEARBY",
-                style = io.diasjakupov.dockify.ui.theme.DockifyTextStyles.sectionHeader,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-        }
-
-        // Nearby users list
-        items(nearbyUsers) { user ->
-            NearbyUserCard(user = user)
-        }
-    }
-}
-
-@Composable
-private fun NearbyUserCard(user: NearbyUser) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "User ${user.userId.take(8)}",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "Nearby",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-/**
- * Formats a coordinate value to 4 decimal places.
- * Kotlin Multiplatform compatible alternative to String.format.
- */
-private fun formatCoordinate(value: Double): String {
-    val rounded = kotlin.math.round(value * 10000) / 10000
-    return rounded.toString()
 }

@@ -32,6 +32,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.health.connect)
             implementation(libs.play.services.location)
+            implementation(libs.maps.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
         }
@@ -72,6 +73,10 @@ kotlin {
             // DataStore
             implementation(libs.datastore.preferences.core)
 
+            // FileKit — cross-platform file picker
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
+
             // Navigation 3
             implementation(libs.navigation3.ui)
             implementation(libs.lifecycle.viewmodel.navigation3)
@@ -86,12 +91,19 @@ android {
     namespace = "io.diasjakupov.dockify"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "io.diasjakupov.dockify"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        val mapsApiKey = (project.findProperty("MAPS_API_KEY") ?: "") as String
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
     packaging {
         resources {

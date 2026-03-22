@@ -23,6 +23,8 @@ kotlinx-serialization = "1.7.3"
 kotlinx-coroutines = "1.9.0"
 kotlinx-datetime = "0.6.1"
 datastore = "1.1.1"
+filekit = "0.13.0"
+maps-compose = "6.2.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -37,6 +39,7 @@ androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecyc
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-health-connect = { module = "androidx.health.connect:connect-client", version.ref = "health-connect" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "maps-compose" }
 
 # Koin
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
@@ -63,6 +66,10 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 
 # DataStore
 datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+
+# FileKit
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
 
 # Navigation 3
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3-ui" }
