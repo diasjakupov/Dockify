@@ -105,8 +105,7 @@ fun AddDocumentBottomSheet(
                     gradient = Brush.linearGradient(listOf(Navy20, Navy30)),
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        onPickFromCamera()
-                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onPickFromCamera(); onDismiss() }
                     }
                 )
                 SourceCard(
@@ -116,8 +115,7 @@ fun AddDocumentBottomSheet(
                     gradient = Brush.linearGradient(listOf(SoftBlue10, SoftBlue20)),
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        onPickFromGallery()
-                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onPickFromGallery(); onDismiss() }
                     }
                 )
                 SourceCard(
@@ -127,8 +125,7 @@ fun AddDocumentBottomSheet(
                     gradient = Brush.linearGradient(listOf(Mint10, Mint20)),
                     modifier = Modifier.weight(1f),
                     onClick = {
-                        onPickFromFiles()
-                        scope.launch { sheetState.hide() }.invokeOnCompletion { onDismiss() }
+                        scope.launch { sheetState.hide() }.invokeOnCompletion { onPickFromFiles(); onDismiss() }
                     }
                 )
             }
