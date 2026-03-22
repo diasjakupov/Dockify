@@ -31,6 +31,10 @@ class DocumentsViewModel(
                 updateState { copy(showFilePicker = false) }
                 emitEffect(DocumentsEffect.LaunchGalleryPicker)
             }
+            is DocumentsAction.PickFromCamera -> {
+                updateState { copy(showFilePicker = false) }
+                emitEffect(DocumentsEffect.LaunchCameraPicker)
+            }
             is DocumentsAction.FileSelected -> uploadFile(action.file)
             is DocumentsAction.PickCancelled -> { /* no-op */ }
             is DocumentsAction.RequestDeleteDocument -> {

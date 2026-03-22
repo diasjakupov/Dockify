@@ -50,6 +50,10 @@ fun DocumentsScreen() {
         if (file != null) viewModel.onAction(DocumentsAction.FileSelected(file))
         else viewModel.onAction(DocumentsAction.PickCancelled)
     }
+    val cameraPickerLauncher = rememberCameraPickerLauncher { file ->
+        if (file != null) viewModel.onAction(DocumentsAction.FileSelected(file))
+        else viewModel.onAction(DocumentsAction.PickCancelled)
+    }
 
     // Load documents on first composition
     LaunchedEffect(Unit) {
@@ -63,6 +67,7 @@ fun DocumentsScreen() {
                 is DocumentsEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
                 is DocumentsEffect.LaunchFilePicker -> filePickerLauncher()
                 is DocumentsEffect.LaunchGalleryPicker -> galleryPickerLauncher()
+                is DocumentsEffect.LaunchCameraPicker -> cameraPickerLauncher()
                 is DocumentsEffect.OpenDocumentFile -> {
                     // TODO: implement platform-specific file viewing (Android: FileProvider intent; iOS: QuickLook)
                     snackbarHostState.showSnackbar("Download complete: ${effect.fileName}")
