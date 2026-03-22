@@ -80,7 +80,7 @@ fun DocumentsScreen() {
         viewModel.onAction(DocumentsAction.LoadDocuments)
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(viewModel) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is DocumentsEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
