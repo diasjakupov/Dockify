@@ -3,7 +3,7 @@ package io.diasjakupov.dockify.features.documents.presentation.documents
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MimeTypeTest {
+class PlatformFileMapperTest {
     @Test
     fun pdfExtensionReturnsPdfMime() {
         assertEquals("application/pdf", mimeTypeFromExtension("pdf"))
