@@ -1,9 +1,12 @@
 package io.diasjakupov.dockify.features.location.presentation.nearby
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -11,6 +14,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import io.diasjakupov.dockify.BuildConfig
 import io.diasjakupov.dockify.features.location.domain.model.Location
 import io.diasjakupov.dockify.features.location.domain.model.NearbyUser
 
@@ -22,6 +26,12 @@ actual fun MapView(
     nearbyUsers: List<NearbyUser>,
     modifier: Modifier
 ) {
+    // Show a blank white placeholder when no Maps API key is configured
+    if (BuildConfig.MAPS_API_KEY.isBlank()) {
+        Box(modifier = modifier.background(Color.White))
+        return
+    }
+
     val center = userLocation?.let { LatLng(it.latitude, it.longitude) } ?: londonLatLng
 
     val cameraPositionState = rememberCameraPositionState {
