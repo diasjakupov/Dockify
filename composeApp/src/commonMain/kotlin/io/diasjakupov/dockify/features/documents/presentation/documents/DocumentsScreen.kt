@@ -1,14 +1,19 @@
 package io.diasjakupov.dockify.features.documents.presentation.documents
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.AlertDialog
@@ -27,6 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.diasjakupov.dockify.features.documents.presentation.components.AddDocumentBottomSheet
@@ -34,6 +41,7 @@ import io.diasjakupov.dockify.features.documents.presentation.components.Documen
 import io.diasjakupov.dockify.features.documents.presentation.components.UploadFab
 import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
 import io.diasjakupov.dockify.ui.components.common.TopBarConfig
+import io.diasjakupov.dockify.ui.theme.NotionColors
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
@@ -107,33 +115,48 @@ fun DocumentsScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(NotionColors.BackgroundWarm)
                 .padding(paddingValues)
         ) {
             when {
-                state.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                state.isLoading -> CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = NotionColors.Accent
+                )
                 state.documents.isEmpty() -> {
                     Column(
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .padding(horizontal = 32.dp),
+                            .padding(horizontal = 40.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Description,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
+                                .background(NotionColors.AccentLight),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Description,
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = NotionColors.Accent
+                            )
+                        }
+                        Spacer(Modifier.height(20.dp))
                         Text(
                             text = "No documents yet",
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            fontWeight = FontWeight.SemiBold,
+                            color = NotionColors.TextPrimary
                         )
+                        Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Tap + to upload a file from your device",
+                            text = "Tap + to upload files from your device",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = NotionColors.TextSecondary,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -141,9 +164,30 @@ fun DocumentsScreen() {
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "All Files",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = NotionColors.TextSecondary
+                                )
+                                Text(
+                                    text = "${state.documents.size} file${if (state.documents.size != 1) "s" else ""}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = NotionColors.TextTertiary
+                                )
+                            }
+                        }
                         items(state.documents, key = { it.id }) { document ->
                             DocumentItem(
                                 document = document,
