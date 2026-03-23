@@ -1,5 +1,6 @@
 package io.diasjakupov.dockify.features.documents.presentation.documents
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,6 +48,7 @@ import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DocumentsScreen() {
     val viewModel: DocumentsViewModel = koinViewModel()
@@ -192,7 +194,8 @@ fun DocumentsScreen() {
                                 onOpen = { viewModel.onAction(DocumentsAction.OpenDocument(document)) },
                                 onDelete = { viewModel.onAction(DocumentsAction.RequestDeleteDocument(document.id)) },
                                 onSwipeDelete = { viewModel.onAction(DocumentsAction.SwipeDeleteDocument(document.id)) },
-                                enabled = !state.isUploading
+                                enabled = !state.isUploading,
+                                modifier = Modifier.animateItem()
                             )
                         }
                     }
