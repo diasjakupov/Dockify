@@ -191,6 +191,7 @@ fun DocumentsScreen() {
                                 document = document,
                                 onOpen = { viewModel.onAction(DocumentsAction.OpenDocument(document)) },
                                 onDelete = { viewModel.onAction(DocumentsAction.RequestDeleteDocument(document.id)) },
+                                onSwipeDelete = { viewModel.onAction(DocumentsAction.SwipeDeleteDocument(document.id)) },
                                 enabled = !state.isUploading
                             )
                         }
