@@ -45,6 +45,7 @@ class DocumentsViewModel(
                 updateState { copy(pendingDeleteId = null) }
             }
             is DocumentsAction.CancelDeleteDocument -> updateState { copy(pendingDeleteId = null) }
+            is DocumentsAction.SwipeDeleteDocument -> deleteDocument(action.id)
             is DocumentsAction.OpenDocument -> downloadDocument(action.document)
             is DocumentsAction.ErrorDismissed -> updateState { copy(error = null) }
         }
