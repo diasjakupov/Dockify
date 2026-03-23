@@ -115,10 +115,8 @@ fun DocumentItem(
             ) {
                 IconButton(
                     onClick = {
-                        scope.launch {
-                            swipeState.animateTo(SwipeAnchor.Idle)
-                            onDelete()
-                        }
+                        scope.launch { swipeState.animateTo(SwipeAnchor.Idle) }
+                        onDelete()
                     },
                     enabled = enabled
                 ) {

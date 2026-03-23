@@ -74,6 +74,7 @@ The backend source lives at `dockify-backend/` (cloned from https://github.com/a
 | `@composeApp/src/commonMain/kotlin/io/diasjakupov/dockify/ui/navigation/Routes.kt` | All nav routes + SavedStateConfiguration |
 | `@composeApp/src/commonMain/kotlin/io/diasjakupov/dockify/ui/navigation/AppNavigator.kt` | Centralized navigator class |
 | `@gradle/libs.versions.toml` | All dependency versions |
+| `@composeApp/src/commonMain/kotlin/io/diasjakupov/dockify/features/documents/feature.md` | Documents feature documentation |
 
 ### Shared UI infrastructure:
 - `@composeApp/src/commonMain/kotlin/io/diasjakupov/dockify/ui/theme/` — theme, colors, typography, dimensions
