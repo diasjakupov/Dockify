@@ -29,4 +29,6 @@ sealed interface DocumentsAction : UiAction {
     data class OpenDocument(val document: Document) : DocumentsAction
     data object ErrorDismissed : DocumentsAction
     data object FilePickerDismissed : DocumentsAction
+    /** Full swipe-to-delete — skips confirmation dialog, deletes immediately */
+    data class SwipeDeleteDocument(val id: String) : DocumentsAction
 }
