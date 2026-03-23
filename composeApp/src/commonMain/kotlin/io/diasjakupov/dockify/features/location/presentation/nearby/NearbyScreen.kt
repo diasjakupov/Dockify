@@ -129,17 +129,16 @@ fun NearbyScreen(
             state.hasNearbyUsers
 
     val sheetState = rememberStandardBottomSheetState(
-        initialValue = if (showSheet) SheetValue.PartiallyExpanded else SheetValue.Hidden,
-        skipHiddenState = false
+        initialValue = SheetValue.PartiallyExpanded,
+        skipHiddenState = true
     )
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
     LaunchedEffect(showSheet) {
         if (showSheet) {
             scaffoldState.bottomSheetState.partialExpand()
-        } else {
-            scaffoldState.bottomSheetState.hide()
         }
+        // When showSheet=false, sheetPeekHeight=0.dp visually hides the sheet
     }
 
     BottomSheetScaffold(
