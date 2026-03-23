@@ -87,8 +87,11 @@ fun DocumentItem(
     }
 
     // Trigger direct delete after full swipe settles
+    var swipeDeleteDispatched by remember { mutableStateOf(false) }
+
     LaunchedEffect(swipeState.settledValue) {
-        if (swipeState.settledValue == SwipeAnchor.Dismissed) {
+        if (swipeState.settledValue == SwipeAnchor.Dismissed && !swipeDeleteDispatched) {
+            swipeDeleteDispatched = true
             onSwipeDelete()
         }
     }
@@ -112,8 +115,10 @@ fun DocumentItem(
             ) {
                 IconButton(
                     onClick = {
-                        scope.launch { swipeState.animateTo(SwipeAnchor.Idle) }
-                        onDelete()
+                        scope.launch {
+                            swipeState.animateTo(SwipeAnchor.Idle)
+                            onDelete()
+                        }
                     },
                     enabled = enabled
                 ) {
