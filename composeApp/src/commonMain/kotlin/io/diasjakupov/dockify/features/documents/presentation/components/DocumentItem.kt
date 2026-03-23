@@ -1,14 +1,9 @@
 package io.diasjakupov.dockify.features.documents.presentation.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -69,7 +64,6 @@ fun DocumentItem(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    var showDelete by remember { mutableStateOf(false) }
     val typeInfo = fileTypeInfo(document.contentType)
 
     val density = LocalDensity.current
@@ -77,13 +71,6 @@ fun DocumentItem(
 
     val swipeState = remember {
         AnchoredDraggableState(initialValue = SwipeAnchor.Idle)
-    }
-
-    // Collapse long-press delete icon when swiping begins
-    LaunchedEffect(swipeState.currentValue) {
-        if (swipeState.currentValue != SwipeAnchor.Idle) {
-            showDelete = false
-        }
     }
 
     // Trigger direct delete after full swipe settles
@@ -151,17 +138,14 @@ fun DocumentItem(
                     orientation = Orientation.Horizontal,
                     enabled = enabled
                 )
-                .combinedClickable(
+                .clickable(
                     enabled = enabled,
                     onClick = {
-                        when {
-                            swipeState.currentValue == SwipeAnchor.Revealed ->
-                                scope.launch { swipeState.animateTo(SwipeAnchor.Idle) }
-                            showDelete -> showDelete = false
-                            else -> onOpen()
-                        }
-                    },
-                    onLongClick = { showDelete = true }
+                        if (swipeState.currentValue == SwipeAnchor.Revealed)
+                            scope.launch { swipeState.animateTo(SwipeAnchor.Idle) }
+                        else
+                            onOpen()
+                    }
                 ),
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -222,25 +206,7 @@ fun DocumentItem(
                     )
                 }
 
-                AnimatedVisibility(
-                    visible = showDelete,
-                    enter = fadeIn() + scaleIn(initialScale = 0.8f),
-                    exit = fadeOut() + scaleOut(targetScale = 0.8f)
-                ) {
-                    IconButton(
-                        onClick = { showDelete = false; onDelete() },
-                        enabled = enabled
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Delete",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                if (!showDelete) Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(8.dp))
             }
         }
     }
