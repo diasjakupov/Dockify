@@ -6,4 +6,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    id("com.google.gms.google-services") version "4.4.4" apply false
+    id("com.google.firebase.appdistribution") version "5.2.1" apply false
 }

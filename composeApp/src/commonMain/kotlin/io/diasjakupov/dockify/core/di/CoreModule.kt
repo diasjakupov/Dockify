@@ -11,18 +11,12 @@ import org.koin.dsl.module
  * Provides application-wide dependencies like HttpClient and configuration.
  */
 val coreModule: Module = module {
-
-    // Base URL for API calls (should be configured per environment)
     single(named("baseUrl")) {
-        "https://aokhan.com" // TODO: Replace with actual API URL
+        "https://aokhan.com"
     }
-
-    // HttpClient factory
     single {
         HttpClientFactory()
     }
-
-    // HttpClient instance
     single<HttpClient> {
         get<HttpClientFactory>().create()
     }

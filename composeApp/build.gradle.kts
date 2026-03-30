@@ -1,3 +1,6 @@
+import java.util.Properties
+
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -7,6 +10,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinxSerialization)
+    id("com.google.gms.google-services")
+    id("com.google.firebase.appdistribution")
 }
 
 kotlin {
@@ -101,7 +106,12 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
-        val mapsApiKey = (project.findProperty("MAPS_API_KEY") ?: "") as String
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+        val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
@@ -111,8 +121,20 @@ android {
         }
     }
     buildTypes {
+        getByName("debug") {
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "testing"
+                releaseNotesFile = "${rootProject.projectDir}/release-notes.txt"
+            }
+        }
         getByName("release") {
             isMinifyEnabled = false
+            firebaseAppDistribution {
+                artifactType = "APK"
+                groups = "testing"
+                releaseNotesFile = "${rootProject.projectDir}/release-notes.txt"
+            }
         }
     }
     compileOptions {
@@ -123,5 +145,57 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+}
+
+abstract class GenerateReleaseNotesTask : DefaultTask() {
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+
+    @get:Input
+    abstract val projectDirPath: Property<String>
+
+    @TaskAction
+    fun generate() {
+        val process = ProcessBuilder("git", "log", "--oneline", "-10")
+            .directory(File(projectDirPath.get()))
+            .redirectErrorStream(true)
+            .start()
+        val gitLog = process.inputStream.bufferedReader().readText().trim()
+        process.waitFor()
+
+        val file = outputFile.get().asFile
+        file.writeText("Recent changes:\n$gitLog")
+        logger.lifecycle("Release notes written to ${file.path}")
+    }
+}
+
+val generateReleaseNotes by tasks.registering(GenerateReleaseNotesTask::class) {
+    group = "distribution"
+    description = "Generates release notes from recent git commits"
+    outputFile.set(rootProject.layout.projectDirectory.file("release-notes.txt"))
+    projectDirPath.set(rootProject.projectDir.absolutePath)
+}
+
+afterEvaluate {
+    tasks.named("appDistributionUploadDebug") {
+        dependsOn(generateReleaseNotes)
+    }
+}
+
+tasks.register("publishToAppDistribution") {
+    group = "distribution"
+    description = "Assembles debug APK with git-based release notes and uploads to Firebase App Distribution"
+
+    dependsOn("assembleDebug")
+
+    doLast {
+        // appDistributionUploadDebug is triggered via finalizedBy after evaluation
+    }
+}
+
+afterEvaluate {
+    tasks.named("publishToAppDistribution") {
+        dependsOn("appDistributionUploadDebug")
+    }
 }
 
