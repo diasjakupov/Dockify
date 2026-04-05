@@ -1,5 +1,8 @@
 package io.diasjakupov.dockify.features.location.presentation.nearby
 
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -7,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -53,6 +57,10 @@ actual fun MapView(
         }
     }
 
+    val selfMarker = remember { createSelfMarkerBitmap() }
+    val personMarker = remember { createPersonMarkerBitmap() }
+    val hospitalMarker = remember { createHospitalMarkerBitmap() }
+
     val mapProperties = remember(darkTheme) {
         if (darkTheme) {
             MapProperties(mapStyleOptions = MapStyleOptions(DARK_MAP_STYLE))
@@ -73,7 +81,7 @@ actual fun MapView(
                     MarkerState(position = LatLng(it.latitude, it.longitude))
                 },
                 title = "You",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                icon = selfMarker
             )
         }
 
@@ -84,7 +92,7 @@ actual fun MapView(
                     MarkerState(position = LatLng(user.location.latitude, user.location.longitude))
                 },
                 title = "User ${user.userId.take(6)}",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                icon = personMarker
             )
         }
 
@@ -102,10 +110,69 @@ actual fun MapView(
                 },
                 title = hospitalName,
                 snippet = "Tap for directions",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
+                icon = hospitalMarker,
                 onInfoWindowClick = { onHospitalClick(hospital) }
             )
         }
+    }
+}
+
+private fun createMarkerBitmap(
+    backgroundColor: Int,
+    drawIcon: (Canvas, Paint) -> Unit
+): BitmapDescriptor {
+    val size = 96
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    // Draw circle background
+    val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = backgroundColor
+        style = Paint.Style.FILL
+    }
+    canvas.drawCircle(size / 2f, size / 2f, size / 2f, bgPaint)
+
+    // Draw icon
+    val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        style = Paint.Style.FILL
+        strokeWidth = 4f
+    }
+    drawIcon(canvas, iconPaint)
+
+    return BitmapDescriptorFactory.fromBitmap(bitmap)
+}
+
+private fun createPersonMarkerBitmap(): BitmapDescriptor {
+    return createMarkerBitmap(0xFFFF9800.toInt()) { canvas, paint ->
+        // Head - circle
+        canvas.drawCircle(48f, 30f, 12f, paint)
+        // Body - rounded rect
+        val bodyRect = android.graphics.RectF(28f, 44f, 68f, 76f)
+        canvas.drawRoundRect(bodyRect, 20f, 20f, paint)
+    }
+}
+
+private fun createHospitalMarkerBitmap(): BitmapDescriptor {
+    return createMarkerBitmap(0xFFF44336.toInt()) { canvas, paint ->
+        paint.strokeWidth = 8f
+        paint.strokeCap = Paint.Cap.ROUND
+        // Horizontal bar of cross
+        canvas.drawLine(30f, 48f, 66f, 48f, paint)
+        // Vertical bar of cross
+        canvas.drawLine(48f, 30f, 48f, 66f, paint)
+    }
+}
+
+private fun createSelfMarkerBitmap(): BitmapDescriptor {
+    return createMarkerBitmap(0xFF2196F3.toInt()) { canvas, paint ->
+        // Outer ring
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 4f
+        canvas.drawCircle(48f, 48f, 16f, paint)
+        // Inner dot
+        paint.style = Paint.Style.FILL
+        canvas.drawCircle(48f, 48f, 7f, paint)
     }
 }
 
