@@ -11,11 +11,13 @@ import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.MapKit.MKCoordinateRegionMakeWithDistance
 import platform.MapKit.MKMapView
 import platform.MapKit.MKPointAnnotation
+import platform.UIKit.UIUserInterfaceStyle
 
 @Composable
 actual fun MapView(
     userLocation: Location?,
     nearbyUsers: List<NearbyUser>,
+    darkTheme: Boolean,
     modifier: Modifier
 ) {
     val lastCentredLocation = remember { mutableStateOf<Location?>(null) }
@@ -24,6 +26,13 @@ actual fun MapView(
         factory = { MKMapView().also { it.showsUserLocation = true } },
         modifier = modifier,
         update = { mapView ->
+            // Adapt map appearance to theme
+            mapView.overrideUserInterfaceStyle = if (darkTheme) {
+                UIUserInterfaceStyle.UIUserInterfaceStyleDark
+            } else {
+                UIUserInterfaceStyle.UIUserInterfaceStyleLight
+            }
+
             // Remove only custom annotations (not the built-in user location dot)
             val customAnnotations = mapView.annotations.filter { it !is platform.MapKit.MKUserLocation }
             mapView.removeAnnotations(customAnnotations)

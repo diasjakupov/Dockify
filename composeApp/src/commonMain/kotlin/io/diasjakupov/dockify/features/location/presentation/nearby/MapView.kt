@@ -13,5 +13,6 @@ import io.diasjakupov.dockify.features.location.domain.model.NearbyUser
 expect fun MapView(
     userLocation: Location?,
     nearbyUsers: List<NearbyUser>,
+    darkTheme: Boolean,
     modifier: Modifier = Modifier
 )

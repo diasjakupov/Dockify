@@ -1,5 +1,6 @@
 package io.diasjakupov.dockify.features.location.presentation.nearby
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -166,6 +167,7 @@ fun NearbyScreen(
                 MapView(
                     userLocation = state.currentLocation,
                     nearbyUsers = state.nearbyUsers,
+                    darkTheme = isSystemInDarkTheme(),
                     modifier = Modifier.fillMaxSize()
                 )
             }
