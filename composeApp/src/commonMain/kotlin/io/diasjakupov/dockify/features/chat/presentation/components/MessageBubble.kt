@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.diasjakupov.dockify.features.chat.domain.model.ChatMessage
 
 @Composable
@@ -41,7 +42,7 @@ fun MessageBubble(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.Top
     ) {
         if (isUser) {
@@ -67,7 +68,7 @@ fun MessageBubble(
         }
 
         Column(
-            modifier = Modifier.widthIn(max = 280.dp)
+            modifier = Modifier.widthIn(max = 320.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -83,16 +84,21 @@ fun MessageBubble(
                         if (isUser) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.surfaceVariant
                     )
-                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
             ) {
                 if (message.content.isEmpty() && isStreaming && !isUser) {
                     StreamingDots()
-                } else {
+                } else if (isUser) {
                     Text(
                         text = message.content,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (isUser) MaterialTheme.colorScheme.onPrimary
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        lineHeight = 20.sp
+                    )
+                } else {
+                    MarkdownText(
+                        text = message.content,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
