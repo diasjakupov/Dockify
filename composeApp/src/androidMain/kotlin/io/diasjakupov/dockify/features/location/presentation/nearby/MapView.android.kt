@@ -57,10 +57,6 @@ actual fun MapView(
         }
     }
 
-    val selfMarker = remember { createSelfMarkerBitmap() }
-    val personMarker = remember { createPersonMarkerBitmap() }
-    val hospitalMarker = remember { createHospitalMarkerBitmap() }
-
     val mapProperties = remember(darkTheme) {
         if (darkTheme) {
             MapProperties(mapStyleOptions = MapStyleOptions(DARK_MAP_STYLE))
@@ -74,6 +70,10 @@ actual fun MapView(
         cameraPositionState = cameraPositionState,
         properties = mapProperties
     ) {
+        val selfMarker = remember { createSelfMarkerBitmap() }
+        val personMarker = remember { createPersonMarkerBitmap() }
+        val hospitalMarker = remember { createHospitalMarkerBitmap() }
+
         // Self marker — blue
         userLocation?.let {
             Marker(
