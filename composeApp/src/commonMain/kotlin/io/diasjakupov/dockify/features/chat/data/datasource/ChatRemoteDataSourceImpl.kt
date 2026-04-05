@@ -39,11 +39,10 @@ class ChatRemoteDataSourceImpl(
         while (!channel.isClosedForRead) {
             val line = channel.readUTF8Line() ?: break
             if (line.isBlank()) continue
-            // Backend sends plain text via SSE: "event: message\ndata: <text>\n\n"
-            // SSE spec: strip exactly one space after "data:", preserve the rest
-            // (leading spaces in tokens are word separators from the AI model)
+            // Gin SSE format: "event:message\ndata:<token>\n\n"
+            // No extra space after "data:" — any space IS part of the token content
             if (!line.startsWith("data:")) continue
-            val data = line.removePrefix("data:").removePrefix(" ")
+            val data = line.removePrefix("data:")
             if (data == "[DONE]") break
             if (data.isNotEmpty()) {
                 emit(data)
