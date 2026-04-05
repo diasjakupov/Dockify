@@ -29,6 +29,7 @@ import io.diasjakupov.dockify.ui.navigation.HealthDetailRoute
 import io.diasjakupov.dockify.ui.navigation.HealthRoute
 import io.diasjakupov.dockify.ui.navigation.LoginRoute
 import io.diasjakupov.dockify.ui.navigation.MainScaffoldScreen
+import io.diasjakupov.dockify.ui.navigation.ChatRoute
 import io.diasjakupov.dockify.ui.navigation.DocumentsRoute
 import io.diasjakupov.dockify.ui.navigation.NearbyRoute
 import io.diasjakupov.dockify.ui.navigation.PlaceholderScreen
@@ -128,6 +129,27 @@ fun App() {
                         is DocumentsRoute -> NavEntry(key) {
                             MainScaffoldScreen(currentRoute = key, navigator = navigator) {
                                 DocumentsScreen()
+                            }
+                        }
+
+                        // Tab 4: Chat
+                        is ChatRoute -> {
+                            if (key.docId == null) {
+                                NavEntry(key) {
+                                    MainScaffoldScreen(currentRoute = key, navigator = navigator) {
+                                        PlaceholderScreen(
+                                            title = "Chat",
+                                            onBack = { navigator.navigateBack() }
+                                        )
+                                    }
+                                }
+                            } else {
+                                NavEntry(key) {
+                                    PlaceholderScreen(
+                                        title = "Document Chat",
+                                        onBack = { navigator.navigateBack() }
+                                    )
+                                }
                             }
                         }
 

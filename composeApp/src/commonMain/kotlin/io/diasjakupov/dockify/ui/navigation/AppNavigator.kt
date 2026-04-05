@@ -82,6 +82,14 @@ class AppNavigator(
         navigateToRoot(DocumentsRoute)
     }
 
+    fun navigateToChat(docId: String? = null, documentName: String? = null) {
+        if (docId == null) {
+            navigateToRoot(ChatRoute())
+        } else {
+            navigateTo(ChatRoute(docId = docId, documentName = documentName))
+        }
+    }
+
     fun navigateToProfile() {
         navigateTo(ProfileRoute)
     }
