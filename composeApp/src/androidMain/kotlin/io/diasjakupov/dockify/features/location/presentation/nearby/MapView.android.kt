@@ -17,19 +17,21 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import io.diasjakupov.dockify.BuildConfig
+import io.diasjakupov.dockify.features.location.domain.model.Hospital
 import io.diasjakupov.dockify.features.location.domain.model.Location
 import io.diasjakupov.dockify.features.location.domain.model.NearbyUser
 
-private val londonLatLng = LatLng(51.5074, -0.1278) // Fallback when user location unavailable
+private val londonLatLng = LatLng(51.5074, -0.1278)
 
 @Composable
 actual fun MapView(
     userLocation: Location?,
     nearbyUsers: List<NearbyUser>,
+    nearbyHospitals: List<Hospital>,
+    onHospitalClick: (Hospital) -> Unit,
     darkTheme: Boolean,
     modifier: Modifier
 ) {
-    // Show a blank white placeholder when no real Maps API key is configured
     if (BuildConfig.MAPS_API_KEY.isBlank() || BuildConfig.MAPS_API_KEY == "PLACEHOLDER_KEY") {
         Box(modifier = modifier.background(Color.White))
         return
@@ -85,13 +87,28 @@ actual fun MapView(
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
             )
         }
+
+        // Hospital markers — red
+        nearbyHospitals.forEachIndexed { index, hospital ->
+            val hospitalName = hospital.name ?: generateHospitalName(index)
+            Marker(
+                state = remember(hospital.location.latitude, hospital.location.longitude) {
+                    MarkerState(
+                        position = LatLng(
+                            hospital.location.latitude,
+                            hospital.location.longitude
+                        )
+                    )
+                },
+                title = hospitalName,
+                snippet = "Tap for directions",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED),
+                onInfoWindowClick = { onHospitalClick(hospital) }
+            )
+        }
     }
 }
 
-/**
- * Google Maps dark style JSON — based on Google's "Night" styling.
- * Darkens the map background, roads, labels, and water to match the app's dark theme.
- */
 private const val DARK_MAP_STYLE = """[
   {"elementType":"geometry","stylers":[{"color":"#242f3e"}]},
   {"elementType":"labels.text.fill","stylers":[{"color":"#746855"}]},

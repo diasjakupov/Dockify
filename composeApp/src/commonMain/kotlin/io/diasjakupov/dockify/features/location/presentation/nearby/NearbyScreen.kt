@@ -170,6 +170,8 @@ fun NearbyScreen(
                 MapView(
                     userLocation = state.currentLocation,
                     nearbyUsers = state.nearbyUsers,
+                    nearbyHospitals = state.nearbyHospitals,
+                    onHospitalClick = { viewModel.onAction(NearbyAction.OpenDirections(it)) },
                     darkTheme = isSystemInDarkTheme(),
                     modifier = Modifier.fillMaxSize()
                 )
