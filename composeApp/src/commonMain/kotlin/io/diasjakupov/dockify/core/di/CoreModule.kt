@@ -20,4 +20,7 @@ val coreModule: Module = module {
     single<HttpClient> {
         get<HttpClientFactory>().create()
     }
+    single<HttpClient>(named("streaming")) {
+        get<HttpClientFactory>().createStreaming()
+    }
 }

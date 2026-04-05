@@ -14,6 +14,8 @@ import kotlinx.serialization.json.Json
  */
 expect class HttpClientFactory() {
     fun create(): HttpClient
+    /** Bare HttpClient without ContentNegotiation/Logging/Inspektify — for SSE streaming. */
+    fun createStreaming(): HttpClient
 }
 
 /**

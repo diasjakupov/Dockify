@@ -35,4 +35,8 @@ actual class HttpClientFactory {
             }
         }
     }
+
+    actual fun createStreaming(): HttpClient {
+        return HttpClient(Darwin)
+    }
 }

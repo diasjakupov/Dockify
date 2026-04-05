@@ -13,6 +13,7 @@ val chatDataModule: Module = module {
     single<ChatRemoteDataSource> {
         ChatRemoteDataSourceImpl(
             httpClient = get(),
+            streamingHttpClient = get(named("streaming")),
             baseUrl = get(named("baseUrl"))
         )
     }
