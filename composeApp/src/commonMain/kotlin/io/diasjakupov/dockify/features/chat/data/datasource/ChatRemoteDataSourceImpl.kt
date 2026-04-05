@@ -1,0 +1,84 @@
+package io.diasjakupov.dockify.features.chat.data.datasource
+
+import io.diasjakupov.dockify.core.domain.DataError
+import io.diasjakupov.dockify.core.domain.EmptyResult
+import io.diasjakupov.dockify.core.domain.Resource
+import io.diasjakupov.dockify.core.network.safeApiCall
+import io.diasjakupov.dockify.core.network.safeApiCallEmpty
+import io.diasjakupov.dockify.features.chat.data.dto.ChatMessageResponseDto
+import io.diasjakupov.dockify.features.chat.data.dto.ChatRequestDto
+import io.diasjakupov.dockify.features.chat.data.dto.StreamChunkDto
+import io.ktor.client.HttpClient
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.utils.io.readUTF8Line
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.Json
+
+class ChatRemoteDataSourceImpl(
+    private val httpClient: HttpClient,
+    private val baseUrl: String
+) : ChatRemoteDataSource {
+
+    private val json = Json { ignoreUnknownKeys = true }
+
+    override fun sendMessageStream(
+        userId: Int,
+        docId: String?,
+        message: String
+    ): Flow<String> = flow {
+        val response = httpClient.post("$baseUrl/api/v1/chat/stream") {
+            contentType(ContentType.Application.Json)
+            setBody(ChatRequestDto(userId = userId, docId = docId, message = message))
+        }
+
+        val channel = response.bodyAsChannel()
+        while (!channel.isClosedForRead) {
+            val line = channel.readUTF8Line() ?: break
+            if (!line.startsWith("data: ")) continue
+            val data = line.removePrefix("data: ")
+            if (data == "[DONE]") break
+
+            try {
+                val chunk = json.decodeFromString<StreamChunkDto>(data)
+                val content = chunk.choices.firstOrNull()?.delta?.content.orEmpty()
+                if (content.isNotEmpty()) {
+                    emit(content)
+                }
+            } catch (_: Exception) {
+                // Skip malformed chunks
+            }
+        }
+    }
+
+    override suspend fun getHistory(
+        userId: Int,
+        docId: String?
+    ): Resource<List<ChatMessageResponseDto>, DataError> {
+        return safeApiCall {
+            httpClient.get("$baseUrl/api/v1/chat") {
+                parameter("user_id", userId)
+                if (docId != null) parameter("doc_id", docId)
+            }
+        }
+    }
+
+    override suspend fun clearHistory(
+        userId: Int,
+        docId: String?
+    ): EmptyResult<DataError> {
+        return safeApiCallEmpty {
+            httpClient.delete("$baseUrl/api/v1/chat") {
+                parameter("user_id", userId)
+                if (docId != null) parameter("doc_id", docId)
+            }
+        }
+    }
+}
