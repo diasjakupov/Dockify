@@ -41,6 +41,15 @@ class NearbyViewModel(
             is NearbyAction.DismissError -> updateState { copy(error = null) }
             is NearbyAction.OpenLocationSettings -> emitEffect(NearbyEffect.OpenGpsSettings)
             is NearbyAction.RetryLastAction -> retryLastAction()
+            is NearbyAction.SelectTab -> updateState { copy(selectedTab = action.tab) }
+            is NearbyAction.OpenDirections -> {
+                val hospital = action.hospital
+                emitEffect(NearbyEffect.OpenDirections(
+                    latitude = hospital.location.latitude,
+                    longitude = hospital.location.longitude,
+                    label = hospital.name ?: "Hospital"
+                ))
+            }
         }
     }
 

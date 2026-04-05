@@ -118,6 +118,9 @@ fun NearbyScreen(
                 is NearbyEffect.LocationFetched -> {
                     // Location successfully fetched — map will update via state
                 }
+                is NearbyEffect.OpenDirections -> {
+                    // Will be handled by platform-specific implementation in a later task
+                }
             }
         }
     }
