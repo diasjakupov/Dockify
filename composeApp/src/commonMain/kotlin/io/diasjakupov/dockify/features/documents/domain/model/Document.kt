@@ -6,5 +6,6 @@ data class Document(
     val fileName: String,
     val fileSize: Long,
     val contentType: String,
+    val summary: String,
     val uploadedAt: String
 )

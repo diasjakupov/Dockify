@@ -10,5 +10,6 @@ data class DocumentResponseDto(
     @SerialName("file_name") val fileName: String,
     @SerialName("file_size") val fileSize: Long,
     @SerialName("content_type") val contentType: String,
+    val summary: String = "",
     @SerialName("uploaded_at") val uploadedAt: String
 )

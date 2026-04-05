@@ -9,5 +9,6 @@ fun DocumentResponseDto.toDomain(): Document = Document(
     fileName = fileName,
     fileSize = fileSize,
     contentType = contentType,
+    summary = summary,
     uploadedAt = uploadedAt
 )
