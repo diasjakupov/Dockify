@@ -151,7 +151,7 @@ fun ChatScreen(
             }
 
             // Message list
-            Box(modifier = Modifier.weight(1f)) {
+            Box(modifier = Modifier.weight(1f).fillMaxSize()) {
                 when {
                     state.loadingState == LoadingState.LOADING -> {
                         CircularProgressIndicator(
