@@ -17,6 +17,7 @@ import platform.MapKit.MKMapViewDelegateProtocol
 import platform.MapKit.MKMarkerAnnotationView
 import platform.MapKit.MKPointAnnotation
 import platform.UIKit.UIColor
+import platform.UIKit.UIImage
 import platform.UIKit.UIUserInterfaceStyle
 import platform.darwin.NSObject
 
@@ -52,11 +53,11 @@ actual fun MapView(
 
                 if (viewForAnnotation is HospitalAnnotation) {
                     annotationView.markerTintColor = UIColor.redColor
-                    annotationView.glyphText = "H"
+                    annotationView.glyphImage = UIImage.systemImageNamed("cross.fill")
                     annotationView.canShowCallout = true
                 } else {
                     annotationView.markerTintColor = UIColor.orangeColor
-                    annotationView.glyphText = "P"
+                    annotationView.glyphImage = UIImage.systemImageNamed("person.fill")
                     annotationView.canShowCallout = true
                 }
 
