@@ -20,9 +20,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
@@ -38,6 +40,8 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
@@ -53,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.diasjakupov.dockify.features.location.domain.model.Hospital
 import io.diasjakupov.dockify.features.location.domain.model.Location
 import io.diasjakupov.dockify.features.location.domain.model.NearbyUser
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionEffect
@@ -118,6 +123,13 @@ fun NearbyScreen(
                 is NearbyEffect.LocationFetched -> {
                     // Location successfully fetched — map will update via state
                 }
+                is NearbyEffect.OpenDirections -> {
+                    openDirectionsToLocation(
+                        latitude = effect.latitude,
+                        longitude = effect.longitude,
+                        label = effect.label
+                    )
+                }
             }
         }
     }
@@ -127,7 +139,7 @@ fun NearbyScreen(
             !state.needsPermission &&
             !state.isGpsDisabled &&
             state.error == null &&
-            state.hasNearbyUsers
+            state.hasNearbyContent
 
     val sheetState = rememberStandardBottomSheetState(
         initialValue = SheetValue.PartiallyExpanded,
@@ -146,16 +158,20 @@ fun NearbyScreen(
         scaffoldState = scaffoldState,
         sheetContent = {
             if (showSheet) {
-                NearbyUsersSheetContent(
+                NearbySheetContent(
                     nearbyUsers = state.nearbyUsers,
-                    currentLocation = state.currentLocation
+                    nearbyHospitals = state.nearbyHospitals,
+                    currentLocation = state.currentLocation,
+                    selectedTab = state.selectedTab,
+                    onTabSelected = { viewModel.onAction(NearbyAction.SelectTab(it)) },
+                    onGetDirections = { viewModel.onAction(NearbyAction.OpenDirections(it)) }
                 )
             } else {
                 // Empty placeholder when sheet is hidden
                 Box(modifier = Modifier.height(1.dp))
             }
         },
-        sheetPeekHeight = if (showSheet) 160.dp else 0.dp,
+        sheetPeekHeight = if (showSheet) 180.dp else 0.dp,
         sheetShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         sheetContainerColor = MaterialTheme.colorScheme.surface,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -167,6 +183,8 @@ fun NearbyScreen(
                 MapView(
                     userLocation = state.currentLocation,
                     nearbyUsers = state.nearbyUsers,
+                    nearbyHospitals = state.nearbyHospitals,
+                    onHospitalClick = { viewModel.onAction(NearbyAction.OpenDirections(it)) },
                     darkTheme = isSystemInDarkTheme(),
                     modifier = Modifier.fillMaxSize()
                 )
@@ -186,7 +204,7 @@ fun NearbyScreen(
                     onRetry = { viewModel.onAction(NearbyAction.RetryLastAction) },
                     onDismiss = { viewModel.onAction(NearbyAction.DismissError) }
                 )
-                !state.hasNearbyUsers &&
+                !state.hasNearbyContent &&
                         state.permissionState == LocationPermissionState.Granted &&
                         state.hasInitiallyLoaded -> EmptyContent()
             }
@@ -278,17 +296,71 @@ private fun NearbyTopBarOverlay(
 // ---------------------------------------------------------------------------
 
 @Composable
-private fun NearbyUsersSheetContent(
+private fun NearbySheetContent(
     nearbyUsers: List<NearbyUser>,
-    currentLocation: Location?
+    nearbyHospitals: List<Hospital>,
+    currentLocation: Location?,
+    selectedTab: NearbyTab,
+    onTabSelected: (NearbyTab) -> Unit,
+    onGetDirections: (Hospital) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
     ) {
-        // Peek row — distance chips
-        if (currentLocation != null) {
+        TabRow(
+            selectedTabIndex = selectedTab.ordinal,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary
+        ) {
+            Tab(
+                selected = selectedTab == NearbyTab.PEOPLE,
+                onClick = { onTabSelected(NearbyTab.PEOPLE) },
+                text = { Text("People (${nearbyUsers.size})") },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            )
+            Tab(
+                selected = selectedTab == NearbyTab.HOSPITALS,
+                onClick = { onTabSelected(NearbyTab.HOSPITALS) },
+                text = { Text("Hospitals (${nearbyHospitals.size})") },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.LocalHospital,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            )
+        }
+
+        when (selectedTab) {
+            NearbyTab.PEOPLE -> PeopleTabContent(
+                nearbyUsers = nearbyUsers,
+                currentLocation = currentLocation
+            )
+            NearbyTab.HOSPITALS -> HospitalsTabContent(
+                nearbyHospitals = nearbyHospitals,
+                currentLocation = currentLocation,
+                onGetDirections = onGetDirections
+            )
+        }
+    }
+}
+
+@Composable
+private fun PeopleTabContent(
+    nearbyUsers: List<NearbyUser>,
+    currentLocation: Location?
+) {
+    Column {
+        if (currentLocation != null && nearbyUsers.isNotEmpty()) {
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -296,15 +368,11 @@ private fun NearbyUsersSheetContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(nearbyUsers.take(5)) { user ->
-                    UserDistanceChip(
-                        user = user,
-                        currentLocation = currentLocation
-                    )
+                    UserDistanceChip(user = user, currentLocation = currentLocation)
                 }
             }
         }
 
-        // Section header
         Text(
             text = "${nearbyUsers.size} PEOPLE NEARBY",
             style = DockifyTextStyles.sectionHeader,
@@ -312,7 +380,6 @@ private fun NearbyUsersSheetContent(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
         )
 
-        // Full user list
         LazyColumn(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -320,6 +387,84 @@ private fun NearbyUsersSheetContent(
             items(nearbyUsers) { user ->
                 NearbyUserCard(user = user, currentLocation = currentLocation)
             }
+        }
+    }
+}
+
+@Composable
+private fun HospitalsTabContent(
+    nearbyHospitals: List<Hospital>,
+    currentLocation: Location?,
+    onGetDirections: (Hospital) -> Unit
+) {
+    Column {
+        if (currentLocation != null && nearbyHospitals.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(nearbyHospitals.take(5)) { hospital ->
+                    HospitalDistanceChip(hospital = hospital, currentLocation = currentLocation)
+                }
+            }
+        }
+
+        Text(
+            text = "${nearbyHospitals.size} HOSPITALS NEARBY",
+            style = DockifyTextStyles.sectionHeader,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+
+        LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            itemsIndexed(nearbyHospitals) { index, hospital ->
+                val distanceText = remember(currentLocation, hospital.location) {
+                    currentLocation?.let { formatDistance(distanceKm(it, hospital.location)) }
+                }
+                HospitalCard(
+                    name = hospital.name ?: generateHospitalName(index),
+                    distanceText = distanceText,
+                    onGetDirections = { onGetDirections(hospital) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HospitalDistanceChip(
+    hospital: Hospital,
+    currentLocation: Location
+) {
+    val distanceText = remember(currentLocation, hospital.location) {
+        formatDistance(distanceKm(currentLocation, hospital.location))
+    }
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.errorContainer,
+        tonalElevation = 1.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.LocalHospital,
+                contentDescription = null,
+                modifier = Modifier.size(12.dp),
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+            Text(
+                text = distanceText,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
         }
     }
 }

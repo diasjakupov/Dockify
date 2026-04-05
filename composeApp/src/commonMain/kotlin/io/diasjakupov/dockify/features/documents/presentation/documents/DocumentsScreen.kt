@@ -84,6 +84,9 @@ fun DocumentsScreen() {
         }
     }
 
+    // Platform file opener (expect/actual)
+    val fileOpener = rememberFileOpener()
+
     // Camera launcher (expect/actual)
     val cameraLauncher = rememberCameraPickerLauncher { file ->
         if (file != null) viewModel.onAction(DocumentsAction.FileSelected(file))
@@ -102,7 +105,7 @@ fun DocumentsScreen() {
                 is DocumentsEffect.LaunchGalleryPicker -> galleryLauncher.launch()
                 is DocumentsEffect.LaunchCameraPicker -> cameraLauncher()
                 is DocumentsEffect.OpenDocumentFile -> {
-                    snackbarHostState.showSnackbar("Download complete: ${effect.fileName}")
+                    fileOpener(effect.bytes, effect.fileName, effect.contentType)
                 }
             }
         }
