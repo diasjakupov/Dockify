@@ -21,6 +21,7 @@ import io.diasjakupov.dockify.features.auth.presentation.login.LoginScreen
 import io.diasjakupov.dockify.features.auth.presentation.register.RegisterScreen
 import io.diasjakupov.dockify.features.health.presentation.HealthScreen
 import io.diasjakupov.dockify.features.auth.presentation.profile.ProfileScreen
+import io.diasjakupov.dockify.features.chat.presentation.ChatScreen
 import io.diasjakupov.dockify.features.documents.presentation.documents.DocumentsScreen
 import io.diasjakupov.dockify.features.location.presentation.nearby.NearbyScreen
 import io.diasjakupov.dockify.ui.navigation.AppNavigator
@@ -137,16 +138,14 @@ fun App() {
                             if (key.docId == null) {
                                 NavEntry(key) {
                                     MainScaffoldScreen(currentRoute = key, navigator = navigator) {
-                                        PlaceholderScreen(
-                                            title = "Chat",
-                                            onBack = { navigator.navigateBack() }
-                                        )
+                                        ChatScreen()
                                     }
                                 }
                             } else {
                                 NavEntry(key) {
-                                    PlaceholderScreen(
-                                        title = "Document Chat",
+                                    ChatScreen(
+                                        docId = key.docId,
+                                        documentName = key.documentName,
                                         onBack = { navigator.navigateBack() }
                                     )
                                 }
