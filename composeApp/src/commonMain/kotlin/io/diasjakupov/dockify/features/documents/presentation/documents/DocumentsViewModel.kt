@@ -48,6 +48,8 @@ class DocumentsViewModel(
             is DocumentsAction.SwipeDeleteDocument -> deleteDocument(action.id)
             is DocumentsAction.OpenDocument -> downloadDocument(action.document)
             is DocumentsAction.ErrorDismissed -> updateState { copy(error = null) }
+            is DocumentsAction.DocumentTapped -> updateState { copy(summaryDocument = action.document) }
+            is DocumentsAction.SummarySheetDismissed -> updateState { copy(summaryDocument = null) }
         }
     }
 

@@ -38,11 +38,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.diasjakupov.dockify.LocalAppNavigator
 import io.diasjakupov.dockify.features.documents.presentation.components.AddDocumentBottomSheet
 import io.diasjakupov.dockify.features.documents.presentation.components.DocumentItem
+import io.diasjakupov.dockify.features.documents.presentation.components.DocumentSummaryBottomSheet
 import io.diasjakupov.dockify.features.documents.presentation.components.UploadFab
 import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
 import io.diasjakupov.dockify.ui.components.common.TopBarConfig
+import io.diasjakupov.dockify.ui.navigation.ChatRoute
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
@@ -55,6 +58,7 @@ fun DocumentsScreen() {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val navigator = LocalAppNavigator.current
 
     // FileKit gallery launcher (images + video)
     val galleryLauncher = rememberFilePickerLauncher(type = FileKitType.ImageAndVideo) { file ->
@@ -191,7 +195,7 @@ fun DocumentsScreen() {
                         items(state.documents, key = { it.id }) { document ->
                             DocumentItem(
                                 document = document,
-                                onOpen = { viewModel.onAction(DocumentsAction.OpenDocument(document)) },
+                                onOpen = { viewModel.onAction(DocumentsAction.DocumentTapped(document)) },
                                 onDelete = { viewModel.onAction(DocumentsAction.RequestDeleteDocument(document.id)) },
                                 onSwipeDelete = { viewModel.onAction(DocumentsAction.SwipeDeleteDocument(document.id)) },
                                 enabled = !state.isUploading,
@@ -228,6 +232,25 @@ fun DocumentsScreen() {
                 TextButton(onClick = { viewModel.onAction(DocumentsAction.CancelDeleteDocument) }) {
                     Text("Cancel")
                 }
+            }
+        )
+    }
+
+    state.summaryDocument?.let { doc ->
+        DocumentSummaryBottomSheet(
+            document = doc,
+            onDismiss = { viewModel.onAction(DocumentsAction.SummarySheetDismissed) },
+            onChatAboutDocument = { document ->
+                viewModel.onAction(DocumentsAction.SummarySheetDismissed)
+                navigator.navigateTo(ChatRoute(docId = document.id, documentName = document.fileName))
+            },
+            onDownload = { document ->
+                viewModel.onAction(DocumentsAction.SummarySheetDismissed)
+                viewModel.onAction(DocumentsAction.OpenDocument(document))
+            },
+            onDelete = { id ->
+                viewModel.onAction(DocumentsAction.SummarySheetDismissed)
+                viewModel.onAction(DocumentsAction.RequestDeleteDocument(id))
             }
         )
     }

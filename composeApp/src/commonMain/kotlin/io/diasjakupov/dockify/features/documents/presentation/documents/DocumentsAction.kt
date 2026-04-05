@@ -31,4 +31,8 @@ sealed interface DocumentsAction : UiAction {
     data object FilePickerDismissed : DocumentsAction
     /** Full swipe-to-delete — skips confirmation dialog, deletes immediately */
     data class SwipeDeleteDocument(val id: String) : DocumentsAction
+    /** User taps a document card — triggers summary bottom sheet */
+    data class DocumentTapped(val document: Document) : DocumentsAction
+    /** User dismisses the summary bottom sheet */
+    data object SummarySheetDismissed : DocumentsAction
 }

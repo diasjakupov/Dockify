@@ -13,6 +13,8 @@ data class DocumentsState(
     val showFilePicker: Boolean = false,
     /** ID of the document pending delete confirmation, null if no dialog is showing */
     val pendingDeleteId: String? = null,
+    /** Document currently shown in summary bottom sheet, null when sheet is hidden */
+    val summaryDocument: Document? = null,
     /** Governs list-fetch loading indicator — independent from isUploading */
     override val loadingState: LoadingState = LoadingState.IDLE,
     override val error: String? = null
