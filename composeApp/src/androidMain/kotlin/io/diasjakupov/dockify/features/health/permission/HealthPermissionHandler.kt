@@ -20,7 +20,10 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -109,8 +112,13 @@ actual class HealthPermissionHandler(
      * @param grantedPermissions The set of permissions that were granted
      */
     fun onPermissionResult(grantedPermissions: Set<String>) {
-        val allGranted = grantedPermissions.containsAll(REQUIRED_PERMISSIONS)
-        permissionDeferred?.complete(allGranted)
+        // The callback only contains permissions granted in THIS session.
+        // Re-check all granted permissions from Health Connect to account for
+        // previously granted ones.
+        CoroutineScope(Dispatchers.Main).launch {
+            val allGranted = hasHealthPermissionsSuspend()
+            permissionDeferred?.complete(allGranted)
+        }
     }
 
     /**
