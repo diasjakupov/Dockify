@@ -2,7 +2,7 @@ package io.diasjakupov.dockify.features.health.data.datasource
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
@@ -229,11 +229,11 @@ class AndroidHealthPlatformDataSource(
     private suspend fun readAggregatedCalories(startTime: Instant, endTime: Instant): HealthMetric? {
         val response = healthConnectClient.aggregate(
             AggregateRequest(
-                metrics = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL),
+                metrics = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL),
                 timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
             )
         )
-        val calories = response[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL] ?: return null
+        val calories = response[TotalCaloriesBurnedRecord.ENERGY_TOTAL] ?: return null
         return AndroidHealthMetricMapper.createCaloriesBurnedMetric(
             calories.inKilocalories,
             endTime.toEpochMilli()

@@ -3,7 +3,7 @@ package io.diasjakupov.dockify.features.health.permission
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
@@ -131,7 +131,7 @@ actual class HealthPermissionHandler(
             HealthPermission.getReadPermission(BloodPressureRecord::class),
             HealthPermission.getReadPermission(OxygenSaturationRecord::class),
             HealthPermission.getReadPermission(SleepSessionRecord::class),
-            HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class),
+            HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
             HealthPermission.getReadPermission(DistanceRecord::class),
             HealthPermission.getReadPermission(WeightRecord::class),
             HealthPermission.getReadPermission(HeightRecord::class),

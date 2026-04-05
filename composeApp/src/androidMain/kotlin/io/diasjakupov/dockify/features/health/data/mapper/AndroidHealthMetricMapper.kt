@@ -1,7 +1,7 @@
 package io.diasjakupov.dockify.features.health.data.mapper
 
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
@@ -38,7 +38,7 @@ object AndroidHealthMetricMapper {
             HealthMetricType.BLOOD_PRESSURE_DIASTOLIC -> BloodPressureRecord::class
             HealthMetricType.BLOOD_OXYGEN -> OxygenSaturationRecord::class
             HealthMetricType.SLEEP_DURATION -> SleepSessionRecord::class
-            HealthMetricType.CALORIES_BURNED -> ActiveCaloriesBurnedRecord::class
+            HealthMetricType.CALORIES_BURNED -> TotalCaloriesBurnedRecord::class
             HealthMetricType.DISTANCE -> DistanceRecord::class
             HealthMetricType.WEIGHT -> WeightRecord::class
             HealthMetricType.HEIGHT -> HeightRecord::class
@@ -63,7 +63,7 @@ object AndroidHealthMetricMapper {
             HealthMetricType.SLEEP_DURATION,
             HealthMetricType.SLEEP_EFFICIENCY,
             HealthMetricType.TIME_IN_BED_HOURS -> HealthPermission.getReadPermission(SleepSessionRecord::class)
-            HealthMetricType.CALORIES_BURNED -> HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
+            HealthMetricType.CALORIES_BURNED -> HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)
             HealthMetricType.DISTANCE -> HealthPermission.getReadPermission(DistanceRecord::class)
             HealthMetricType.WEIGHT -> HealthPermission.getReadPermission(WeightRecord::class)
             HealthMetricType.HEIGHT -> HealthPermission.getReadPermission(HeightRecord::class)
