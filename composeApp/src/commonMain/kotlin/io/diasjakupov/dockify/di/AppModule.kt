@@ -13,6 +13,9 @@ import io.diasjakupov.dockify.features.documents.di.documentDataModule
 import io.diasjakupov.dockify.features.documents.di.documentDomainModule
 import io.diasjakupov.dockify.features.documents.presentation.di.documentPresentationModule
 import io.diasjakupov.dockify.features.recommendation.di.recommendationModule
+import io.diasjakupov.dockify.features.chat.di.chatDataModule
+import io.diasjakupov.dockify.features.chat.di.chatDomainModule
+import io.diasjakupov.dockify.features.chat.presentation.di.chatPresentationModule
 import org.koin.core.module.Module
 
 /**
@@ -32,5 +35,8 @@ fun appModules(): List<Module> = listOf(
     profilePresentationModule,
     documentDataModule,
     documentDomainModule,
-    documentPresentationModule
+    documentPresentationModule,
+    chatDataModule,
+    chatDomainModule,
+    chatPresentationModule
 )
