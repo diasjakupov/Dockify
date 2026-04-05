@@ -39,6 +39,13 @@ data object NearbyRoute : NavKey
 @Serializable
 data object DocumentsRoute : NavKey
 
+/** Chat screen — general (docId=null) or document-specific */
+@Serializable
+data class ChatRoute(
+    val docId: String? = null,
+    val documentName: String? = null
+) : NavKey
+
 /** Pushed from Nearby top bar profile icon */
 @Serializable
 data object ProfileRoute : NavKey
@@ -61,6 +68,7 @@ val navSavedStateConfig = SavedStateConfiguration {
             subclass(HealthDetailRoute::class, HealthDetailRoute.serializer())
             subclass(NearbyRoute::class, NearbyRoute.serializer())
             subclass(DocumentsRoute::class, DocumentsRoute.serializer())
+            subclass(ChatRoute::class, ChatRoute.serializer())
             subclass(ProfileRoute::class, ProfileRoute.serializer())
             subclass(SettingsRoute::class, SettingsRoute.serializer())
         }
@@ -73,5 +81,6 @@ val navSavedStateConfig = SavedStateConfiguration {
 enum class TopLevelDestination(val route: NavKey) {
     HEALTH(HealthRoute),
     NEARBY(NearbyRoute),
-    DOCUMENTS(DocumentsRoute)
+    DOCUMENTS(DocumentsRoute),
+    CHAT(ChatRoute())
 }

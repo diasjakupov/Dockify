@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PeopleAlt
@@ -53,6 +55,12 @@ enum class BottomNavItem(
         label = "Documents",
         selectedIcon = Icons.Filled.Description,
         unselectedIcon = Icons.Outlined.Description
+    ),
+    CHAT(
+        route = ChatRoute(),
+        label = "Chat",
+        selectedIcon = Icons.Filled.ChatBubble,
+        unselectedIcon = Icons.Outlined.ChatBubbleOutline
     )
 }
 
