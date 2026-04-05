@@ -7,7 +7,6 @@ import io.diasjakupov.dockify.core.network.safeApiCall
 import io.diasjakupov.dockify.core.network.safeApiCallEmpty
 import io.diasjakupov.dockify.features.chat.data.dto.ChatMessageResponseDto
 import io.diasjakupov.dockify.features.chat.data.dto.ChatRequestDto
-import io.diasjakupov.dockify.features.chat.data.dto.StreamChunkDto
 import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -20,14 +19,11 @@ import io.ktor.http.contentType
 import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.serialization.json.Json
 
 class ChatRemoteDataSourceImpl(
     private val httpClient: HttpClient,
     private val baseUrl: String
 ) : ChatRemoteDataSource {
-
-    private val json = Json { ignoreUnknownKeys = true }
 
     override fun sendMessageStream(
         userId: Int,
@@ -42,18 +38,13 @@ class ChatRemoteDataSourceImpl(
         val channel = response.bodyAsChannel()
         while (!channel.isClosedForRead) {
             val line = channel.readUTF8Line() ?: break
-            if (!line.startsWith("data: ")) continue
-            val data = line.removePrefix("data: ")
+            if (line.isBlank()) continue
+            // Backend sends plain text chunks via SSE: "event: message\ndata: <text>\n\n"
+            if (!line.startsWith("data:")) continue
+            val data = line.removePrefix("data:").trimStart()
             if (data == "[DONE]") break
-
-            try {
-                val chunk = json.decodeFromString<StreamChunkDto>(data)
-                val content = chunk.choices.firstOrNull()?.delta?.content.orEmpty()
-                if (content.isNotEmpty()) {
-                    emit(content)
-                }
-            } catch (_: Exception) {
-                // Skip malformed chunks
+            if (data.isNotEmpty()) {
+                emit(data)
             }
         }
     }
