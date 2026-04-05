@@ -54,9 +54,6 @@ data object ProfileRoute : NavKey
 @Serializable
 data object SettingsRoute : NavKey
 
-/** Chat screen — optionally pre-loaded with a document context */
-@Serializable
-data class ChatRoute(val docId: String? = null, val documentName: String? = null) : NavKey
 
 /**
  * SavedStateConfiguration for Navigation 3 back stack serialization.
@@ -75,7 +72,6 @@ val navSavedStateConfig = SavedStateConfiguration {
             subclass(ChatRoute::class, ChatRoute.serializer())
             subclass(ProfileRoute::class, ProfileRoute.serializer())
             subclass(SettingsRoute::class, SettingsRoute.serializer())
-            subclass(ChatRoute::class, ChatRoute.serializer())
         }
     }
 }
