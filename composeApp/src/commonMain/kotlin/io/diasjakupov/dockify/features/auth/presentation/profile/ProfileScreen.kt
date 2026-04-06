@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Switch
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -99,6 +100,7 @@ fun ProfileScreen(
             state.user != null -> {
                 ProfileContent(
                     state = state,
+                    onToggleDemoMode = { viewModel.onAction(ProfileAction.ToggleDemoMode) },
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -109,6 +111,7 @@ fun ProfileScreen(
 @Composable
 private fun ProfileContent(
     state: ProfileState,
+    onToggleDemoMode: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val user = state.user ?: return
@@ -172,6 +175,42 @@ private fun ProfileContent(
             ProfileRow(label = "Email", value = user.email)
             HorizontalDivider(color = NotionColors.Divider, thickness = 1.dp)
             ProfileRow(label = "Username", value = user.username)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "SETTINGS",
+            style = DockifyTextStyles.sectionHeader,
+            color = NotionColors.TextTertiary
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, NotionColors.Divider, RoundedCornerShape(12.dp))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Demo Mode",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = NotionColors.TextPrimary
+                )
+                Text(
+                    text = "Adds sample data for testing",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = NotionColors.TextSecondary
+                )
+            }
+            Switch(
+                checked = state.isDemoMode,
+                onCheckedChange = { onToggleDemoMode() }
+            )
         }
     }
 }
