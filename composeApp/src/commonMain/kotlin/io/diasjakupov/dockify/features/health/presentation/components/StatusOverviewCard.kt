@@ -35,14 +35,14 @@ fun StatusOverviewCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, NotionColors.Divider, RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "STATUS OVERVIEW",
             style = DockifyTextStyles.sectionHeader,
-            color = NotionColors.TextTertiary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         vitals.chunked(2).forEach { row ->
@@ -71,7 +71,7 @@ private fun StatusOverviewItem(
 ) {
     val statusColor = when (vital.status) {
         VitalStatus.EXCELLENT, VitalStatus.GOOD -> NotionColors.StatusSuccess
-        VitalStatus.NORMAL -> NotionColors.TextSecondary
+        VitalStatus.NORMAL -> MaterialTheme.colorScheme.onSurfaceVariant
         VitalStatus.WARNING -> NotionColors.StatusWarning
         VitalStatus.ALERT, VitalStatus.CRITICAL -> NotionColors.StatusError
     }
@@ -91,12 +91,12 @@ private fun StatusOverviewItem(
             Text(
                 text = vital.label,
                 style = MaterialTheme.typography.labelSmall,
-                color = NotionColors.TextTertiary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = "${vital.value} ${vital.unit}",
                 style = MaterialTheme.typography.labelMedium,
-                color = NotionColors.TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
