@@ -38,7 +38,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun LoginScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToRegister: () -> Unit,
-    onNavigateToForgotPassword: () -> Unit = {},
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -49,7 +48,6 @@ fun LoginScreen(
             when (effect) {
                 is LoginEffect.NavigateToHome -> onNavigateToHome()
                 is LoginEffect.NavigateToRegister -> onNavigateToRegister()
-                is LoginEffect.NavigateToForgotPassword -> onNavigateToForgotPassword()
                 is LoginEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
             }
         }
@@ -111,15 +109,6 @@ fun LoginScreen(
                     enabled = !state.isLoading,
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                TextButton(
-                    onClick = { viewModel.onAction(LoginAction.ForgotPasswordClicked) },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Forgot Password?")
-                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 

@@ -53,10 +53,6 @@ class AppNavigator(
         navigateTo(RegisterRoute)
     }
 
-    fun navigateToForgotPassword() {
-        navigateTo(ForgotPasswordRoute)
-    }
-
     /** Navigate to Health tab after successful login, clearing auth screens. */
     fun navigateToHealthAfterLogin() {
         navigateToRoot(HealthRoute)
@@ -68,10 +64,6 @@ class AppNavigator(
 
     fun navigateToHealth() {
         navigateToRoot(HealthRoute)
-    }
-
-    fun navigateToHealthDetail(metricType: String) {
-        navigateTo(HealthDetailRoute(metricType))
     }
 
     fun navigateToNearby() {
@@ -92,10 +84,6 @@ class AppNavigator(
 
     fun navigateToProfile() {
         navigateTo(ProfileRoute)
-    }
-
-    fun navigateToSettings() {
-        navigateTo(SettingsRoute)
     }
 
     fun navigateToTopLevel(destination: TopLevelDestination) {

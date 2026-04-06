@@ -77,7 +77,6 @@ data class VitalSign(
 @Composable
 fun HealthVitalsSection(
     metrics: List<HealthMetric>,
-    onClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val vitals = metrics.toVitalSigns()
@@ -107,7 +106,6 @@ fun HealthVitalsSection(
                     rowItems.forEach { vital ->
                         VitalCard(
                             vital = vital,
-                            onClick = { onClick(vital.type.name) },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -124,11 +122,9 @@ fun HealthVitalsSection(
 @Composable
 private fun VitalCard(
     vital: VitalSign,
-    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = onClick,
         modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Favorite
@@ -15,7 +14,6 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.PeopleAlt
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -26,8 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
-import io.diasjakupov.dockify.ui.components.common.DockifyScaffold
-import io.diasjakupov.dockify.ui.components.common.TopBarConfig
 
 /**
  * The two bottom navigation items.
@@ -118,34 +114,5 @@ fun Nav3BottomNavigation(
                 label = { Text(item.label) }
             )
         }
-    }
-}
-
-/**
- * Placeholder screen for unimplemented destinations (e.g. ForgotPassword, Settings).
- */
-@Composable
-fun PlaceholderScreen(
-    title: String,
-    onBack: () -> Unit
-) {
-    DockifyScaffold(
-        topBarConfig = TopBarConfig.Simple(
-            title = title,
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-            }
-        )
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        )
     }
 }

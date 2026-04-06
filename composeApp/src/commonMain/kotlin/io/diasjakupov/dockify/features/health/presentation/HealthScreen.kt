@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -79,8 +78,6 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 @Composable
 fun HealthScreen(
-    onNavigateToDetail: (String) -> Unit = {},
-    onNavigateToSettings: () -> Unit = {},
     viewModel: HealthViewModel = koinViewModel(),
     healthPermissionHandler: HealthPermissionHandler = koinInject(),
     locationPermissionHandler: LocationPermissionHandler = koinInject()
@@ -115,8 +112,7 @@ fun HealthScreen(
                 HealthTopBar(
                     isSyncing = state.isSyncing,
                     canSync = state.canSync,
-                    onSync = { viewModel.onAction(HealthAction.SyncHealthData) },
-                    onSettings = onNavigateToSettings
+                    onSync = { viewModel.onAction(HealthAction.SyncHealthData) }
                 )
                 BackgroundSyncStatusBanner(
                     isBackgroundSyncing = state.isBackgroundSyncing,
@@ -131,7 +127,6 @@ fun HealthScreen(
         HealthScreenContent(
             state = state,
             onAction = viewModel::onAction,
-            onNavigateToDetail = onNavigateToDetail,
             modifier = Modifier.padding(paddingValues)
         )
     }
@@ -142,7 +137,6 @@ private fun HealthTopBar(
     isSyncing: Boolean,
     canSync: Boolean,
     onSync: () -> Unit,
-    onSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -162,47 +156,26 @@ private fun HealthTopBar(
             )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        IconButton(
+            onClick = onSync,
+            enabled = canSync,
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            ),
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
         ) {
-            IconButton(
-                onClick = onSync,
-                enabled = canSync,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                ),
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-            ) {
-                if (isSyncing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(22.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Sync,
-                        contentDescription = "Sync Health Data",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            IconButton(
-                onClick = onSettings,
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                ),
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-            ) {
+            if (isSyncing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(22.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
                 Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
+                    imageVector = Icons.Default.Sync,
+                    contentDescription = "Sync Health Data",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -320,7 +293,6 @@ private fun BackgroundSyncStatusBanner(
 private fun HealthScreenContent(
     state: HealthState,
     onAction: (HealthAction) -> Unit,
-    onNavigateToDetail: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Hoist animation state to top of composable to avoid conditional state reads
@@ -458,8 +430,7 @@ private fun HealthScreenContent(
                             )
                         ) {
                             HealthVitalsSection(
-                                metrics = state.vitalMetrics,
-                                onClick = onNavigateToDetail
+                                metrics = state.vitalMetrics
                             )
                         }
                     }

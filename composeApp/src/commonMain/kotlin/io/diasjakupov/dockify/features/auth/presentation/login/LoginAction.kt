@@ -7,6 +7,5 @@ sealed interface LoginAction : UiAction {
     data class PasswordChanged(val password: String) : LoginAction
     data object LoginClicked : LoginAction
     data object RegisterClicked : LoginAction
-    data object ForgotPasswordClicked : LoginAction
     data object ErrorDismissed : LoginAction
 }

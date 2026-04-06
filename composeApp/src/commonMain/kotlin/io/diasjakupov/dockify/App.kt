@@ -25,18 +25,14 @@ import io.diasjakupov.dockify.features.chat.presentation.ChatScreen
 import io.diasjakupov.dockify.features.documents.presentation.documents.DocumentsScreen
 import io.diasjakupov.dockify.features.location.presentation.nearby.NearbyScreen
 import io.diasjakupov.dockify.ui.navigation.AppNavigator
-import io.diasjakupov.dockify.ui.navigation.ForgotPasswordRoute
-import io.diasjakupov.dockify.ui.navigation.HealthDetailRoute
 import io.diasjakupov.dockify.ui.navigation.HealthRoute
 import io.diasjakupov.dockify.ui.navigation.LoginRoute
 import io.diasjakupov.dockify.ui.navigation.MainScaffoldScreen
 import io.diasjakupov.dockify.ui.navigation.ChatRoute
 import io.diasjakupov.dockify.ui.navigation.DocumentsRoute
 import io.diasjakupov.dockify.ui.navigation.NearbyRoute
-import io.diasjakupov.dockify.ui.navigation.PlaceholderScreen
 import io.diasjakupov.dockify.ui.navigation.ProfileRoute
 import io.diasjakupov.dockify.ui.navigation.RegisterRoute
-import io.diasjakupov.dockify.ui.navigation.SettingsRoute
 import io.diasjakupov.dockify.ui.navigation.navSavedStateConfig
 import io.diasjakupov.dockify.ui.navigation.rememberAppNavigator
 import io.diasjakupov.dockify.ui.theme.DockifyTheme
@@ -81,8 +77,7 @@ fun App() {
                         is LoginRoute -> NavEntry(key) {
                             LoginScreen(
                                 onNavigateToHome = { navigator.navigateToHealthAfterLogin() },
-                                onNavigateToRegister = { navigator.navigateToRegister() },
-                                onNavigateToForgotPassword = { navigator.navigateToForgotPassword() }
+                                onNavigateToRegister = { navigator.navigateToRegister() }
                             )
                         }
                         is RegisterRoute -> NavEntry(key) {
@@ -91,29 +86,11 @@ fun App() {
                                 onNavigateBack = { navigator.navigateBack() }
                             )
                         }
-                        is ForgotPasswordRoute -> NavEntry(key) {
-                            PlaceholderScreen(
-                                title = "Forgot Password",
-                                onBack = { navigator.navigateBack() }
-                            )
-                        }
-
                         // Tab 1: Health
                         is HealthRoute -> NavEntry(key) {
                             MainScaffoldScreen(currentRoute = key, navigator = navigator) {
-                                HealthScreen(
-                                    onNavigateToDetail = { metricType ->
-                                        navigator.navigateToHealthDetail(metricType)
-                                    },
-                                    onNavigateToSettings = { navigator.navigateToSettings() }
-                                )
+                                HealthScreen()
                             }
-                        }
-                        is HealthDetailRoute -> NavEntry(key) {
-                            PlaceholderScreen(
-                                title = key.metricType,
-                                onBack = { navigator.navigateBack() }
-                            )
                         }
 
                         // Tab 2: Nearby
@@ -159,13 +136,6 @@ fun App() {
                                 onNavigateToLogin = { navigator.navigateToLogin() }
                             )
                         }
-                        is SettingsRoute -> NavEntry(key) {
-                            PlaceholderScreen(
-                                title = "Settings",
-                                onBack = { navigator.navigateBack() }
-                            )
-                        }
-
                         else -> error("Unknown route: $key")
                     }
                 }

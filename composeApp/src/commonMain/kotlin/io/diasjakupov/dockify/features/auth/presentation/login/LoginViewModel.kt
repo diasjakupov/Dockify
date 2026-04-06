@@ -16,7 +16,6 @@ class LoginViewModel(
             is LoginAction.PasswordChanged -> handlePasswordChanged(action.password)
             is LoginAction.LoginClicked -> handleLogin()
             is LoginAction.RegisterClicked -> emitEffect(LoginEffect.NavigateToRegister)
-            is LoginAction.ForgotPasswordClicked -> emitEffect(LoginEffect.NavigateToForgotPassword)
             is LoginAction.ErrorDismissed -> updateState { copy(error = null) }
         }
     }
