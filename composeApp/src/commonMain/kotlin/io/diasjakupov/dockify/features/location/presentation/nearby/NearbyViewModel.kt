@@ -1,9 +1,12 @@
 package io.diasjakupov.dockify.features.location.presentation.nearby
 
+import io.diasjakupov.dockify.core.demo.DemoModeRepository
+import io.diasjakupov.dockify.core.demo.FakeDataProvider
 import io.diasjakupov.dockify.core.domain.DataError
 import io.diasjakupov.dockify.core.domain.Resource
 import io.diasjakupov.dockify.features.auth.domain.usecase.GetCurrentUserUseCase
 import io.diasjakupov.dockify.features.location.domain.model.Hospital
+import io.diasjakupov.dockify.features.location.domain.model.NearbyUser
 import io.diasjakupov.dockify.features.location.domain.repository.LocationRepository
 import io.diasjakupov.dockify.features.location.domain.usecase.GetCurrentLocationUseCase
 import io.diasjakupov.dockify.features.location.domain.usecase.GetNearestHospitalsUseCase
@@ -19,15 +22,31 @@ class NearbyViewModel(
     private val getNearestHospitalsUseCase: GetNearestHospitalsUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val locationRepository: LocationRepository,
-    private val permissionHandler: LocationPermissionHandler
+    private val permissionHandler: LocationPermissionHandler,
+    private val demoModeRepository: DemoModeRepository
 ) : BaseViewModel<NearbyState, NearbyAction, NearbyEffect>(NearbyState()) {
 
     companion object {
         private const val DEFAULT_RADIUS_METERS = 5000.0
     }
 
+    private var isDemoMode = false
+    private var realUsers: List<NearbyUser> = emptyList()
+    private var realHospitals: List<Hospital> = emptyList()
+
     init {
         onAction(NearbyAction.CheckPermissionAndLoadData)
+        observeDemoMode()
+    }
+
+    private fun observeDemoMode() {
+        collectFlow(demoModeRepository.isDemoMode()) { newDemoMode ->
+            this@NearbyViewModel.isDemoMode = newDemoMode
+            copy(
+                nearbyUsers = if (newDemoMode) realUsers + FakeDataProvider.nearbyUsers else realUsers,
+                nearbyHospitals = if (newDemoMode) realHospitals + FakeDataProvider.nearbyHospitals else realHospitals
+            )
+        }
     }
 
     override fun handleAction(action: NearbyAction) {
@@ -201,7 +220,9 @@ class NearbyViewModel(
                         currentUserId = userId
                     )) {
                         is Resource.Success -> {
-                            updateState { copy(nearbyUsers = usersResult.data) }
+                            realUsers = usersResult.data
+                            val displayUsers = if (isDemoMode) realUsers + FakeDataProvider.nearbyUsers else realUsers
+                            updateState { copy(nearbyUsers = displayUsers) }
                         }
                         is Resource.Error -> {
                             updateState { copy(error = usersResult.error.toUserMessage()) }
@@ -214,7 +235,9 @@ class NearbyViewModel(
                         radiusMeters = DEFAULT_RADIUS_METERS
                     )) {
                         is Resource.Success -> {
-                            updateState { copy(nearbyHospitals = hospitalsResult.data) }
+                            realHospitals = hospitalsResult.data
+                            val displayHospitals = if (isDemoMode) realHospitals + FakeDataProvider.nearbyHospitals else realHospitals
+                            updateState { copy(nearbyHospitals = displayHospitals) }
                         }
                         is Resource.Error -> { /* non-blocking */ }
                     }
@@ -265,7 +288,9 @@ class NearbyViewModel(
                         currentUserId = userId
                     )) {
                         is Resource.Success -> {
-                            updateState { copy(nearbyUsers = usersResult.data) }
+                            realUsers = usersResult.data
+                            val displayUsers = if (isDemoMode) realUsers + FakeDataProvider.nearbyUsers else realUsers
+                            updateState { copy(nearbyUsers = displayUsers) }
                         }
                         is Resource.Error -> {
                             updateState { copy(error = usersResult.error.toUserMessage()) }
@@ -277,7 +302,9 @@ class NearbyViewModel(
                         radiusMeters = DEFAULT_RADIUS_METERS
                     )) {
                         is Resource.Success -> {
-                            updateState { copy(nearbyHospitals = hospitalsResult.data) }
+                            realHospitals = hospitalsResult.data
+                            val displayHospitals = if (isDemoMode) realHospitals + FakeDataProvider.nearbyHospitals else realHospitals
+                            updateState { copy(nearbyHospitals = displayHospitals) }
                         }
                         is Resource.Error -> { /* non-blocking */ }
                     }

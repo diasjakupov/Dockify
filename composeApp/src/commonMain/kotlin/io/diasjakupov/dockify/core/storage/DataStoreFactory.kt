@@ -2,6 +2,7 @@ package io.diasjakupov.dockify.core.storage
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 
 expect class DataStoreFactory {
@@ -15,4 +16,8 @@ object AuthPreferenceKeys {
     val FIRST_NAME = stringPreferencesKey("first_name")
     val LAST_NAME = stringPreferencesKey("last_name")
     val CREATED_AT = stringPreferencesKey("created_at")
+}
+
+object AppPreferenceKeys {
+    val DEMO_MODE_ENABLED = booleanPreferencesKey("demo_mode_enabled")
 }

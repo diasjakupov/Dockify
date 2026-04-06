@@ -1,5 +1,7 @@
 package io.diasjakupov.dockify.core.di
 
+import io.diasjakupov.dockify.core.demo.DemoModeRepository
+import io.diasjakupov.dockify.core.demo.DemoModeRepositoryImpl
 import io.diasjakupov.dockify.core.network.HttpClientFactory
 import io.ktor.client.HttpClient
 import org.koin.core.module.Module
@@ -23,4 +25,5 @@ val coreModule: Module = module {
     single<HttpClient>(named("streaming")) {
         get<HttpClientFactory>().createStreaming()
     }
+    single<DemoModeRepository> { DemoModeRepositoryImpl(dataStore = get()) }
 }

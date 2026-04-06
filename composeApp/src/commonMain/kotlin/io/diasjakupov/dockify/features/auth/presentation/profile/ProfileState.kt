@@ -10,6 +10,7 @@ import io.diasjakupov.dockify.ui.base.WithLoading
 
 data class ProfileState(
     val user: User? = null,
+    val isDemoMode: Boolean = false,
     override val loadingState: LoadingState = LoadingState.IDLE,
     override val error: String? = null
 ) : UiState, WithLoading, WithError
@@ -17,6 +18,7 @@ data class ProfileState(
 sealed interface ProfileAction : UiAction {
     data object LoadProfile : ProfileAction
     data object Logout : ProfileAction
+    data object ToggleDemoMode : ProfileAction
 }
 
 sealed interface ProfileEffect : UiEffect {

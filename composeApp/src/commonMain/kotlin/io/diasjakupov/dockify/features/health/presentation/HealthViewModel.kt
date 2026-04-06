@@ -12,6 +12,8 @@ import io.diasjakupov.dockify.features.health.domain.usecase.SyncHealthDataUseCa
 import io.diasjakupov.dockify.features.health.permission.HealthPermissionHandler
 import io.diasjakupov.dockify.features.location.domain.model.Location
 import io.diasjakupov.dockify.features.location.domain.usecase.GetCurrentLocationUseCase
+import io.diasjakupov.dockify.core.demo.DemoModeRepository
+import io.diasjakupov.dockify.core.demo.FakeDataProvider
 import io.diasjakupov.dockify.features.location.permission.LocationPermissionHandler
 import io.diasjakupov.dockify.features.recommendation.domain.usecase.GetRecommendationUseCase
 import io.diasjakupov.dockify.ui.base.BaseViewModel
@@ -37,13 +39,35 @@ class HealthViewModel(
     private val getCurrentLocationUseCase: GetCurrentLocationUseCase,
     private val healthRepository: HealthRepository,
     private val healthPermissionHandler: HealthPermissionHandler,
-    private val locationPermissionHandler: LocationPermissionHandler
+    private val locationPermissionHandler: LocationPermissionHandler,
+    private val demoModeRepository: DemoModeRepository
 ) : BaseViewModel<HealthState, HealthAction, HealthEffect>(HealthState()) {
 
     private val allMetricTypes = HealthMetricType.entries.toList()
+    private var isDemoMode = false
+    private var realMetrics: List<HealthMetric> = emptyList()
 
     init {
         onAction(HealthAction.CheckPermissionsAndAutoSync)
+        observeDemoMode()
+    }
+
+    private fun observeDemoMode() {
+        collectFlow(demoModeRepository.isDemoMode()) { newDemoMode ->
+            this@HealthViewModel.isDemoMode = newDemoMode
+            val displayMetrics = if (newDemoMode) {
+                mergeWithFakeMetrics(realMetrics)
+            } else {
+                realMetrics
+            }
+            copy(healthMetrics = displayMetrics)
+        }
+    }
+
+    private fun mergeWithFakeMetrics(real: List<HealthMetric>): List<HealthMetric> {
+        val realTypes = real.map { it.type }.toSet()
+        val fakeToAdd = FakeDataProvider.healthMetrics.filter { it.type !in realTypes }
+        return real + fakeToAdd
     }
 
     override fun handleAction(action: HealthAction) {
@@ -372,9 +396,10 @@ class HealthViewModel(
                         println("[HealthViewModel]   ${m.type.name} = ${m.value} ${m.unit}")
                     }
 
+                    realMetrics = platformMetrics
                     updateState {
                         copy(
-                            healthMetrics = platformMetrics,
+                            healthMetrics = if (isDemoMode) mergeWithFakeMetrics(platformMetrics) else platformMetrics,
                             loadingState = LoadingState.IDLE,
                             hasInitiallyLoadedPlatformData = true,
                             isBackgroundSyncing = true,
